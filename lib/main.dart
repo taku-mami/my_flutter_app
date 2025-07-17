@@ -113,13 +113,13 @@ class LoginScreen extends StatelessWidget {
       backgroundColor: Colors.black, // 전체 배경을 검정색으로 설정
       body: Stack(
         children: [
-          // 배경 타자기 효과 - 화면 중간에 "안녕" 텍스트가 타자기처럼 나타남
+          // 배경 타자기 효과 - 화면 중간에 텍스트가 타자기처럼 나타남
           Positioned(
             top: MediaQuery.of(context).size.height * 0.3, // 화면 높이의 30% 지점에 배치
             left: 0, // 왼쪽 끝
             right: 0, // 오른쪽 끝 (가로 전체 너비 사용)
             child: Center(
-              child: TypingText(text: '안녕하세요'), // 타자기 효과로 "안녕" 표시
+              child: TypingText(text: '반갑습니다'), // 타자기 효과
             ),
           ),
           // 화면 하단에 카드 형태의 컨테이너를 배치
