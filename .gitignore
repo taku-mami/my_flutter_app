@@ -47,6 +47,8 @@ app.*.map.json
 # Firebase configuration files (보안상 민감)
 ios/Runner/GoogleService-Info.plist
 android/app/google-services.json
+firebase.json
+lib/firebase_options.dart
 
 # Keystore files
 *.keystore

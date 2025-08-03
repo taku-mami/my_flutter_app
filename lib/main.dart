@@ -5,8 +5,53 @@ import 'package:google_sign_in/google_sign_in.dart';
 // SVG 이미지를 사용하기 위한 패키지
 import 'package:flutter_svg/flutter_svg.dart';
 
+// 앱 설정을 관리하는 클래스
+class AppConfig {
+  // 싱글톤 패턴으로 설정 인스턴스 관리
+  static final AppConfig _instance = AppConfig._internal();
+  factory AppConfig() => _instance;
+  AppConfig._internal();
+
+  // 버튼 표시 설정
+  bool showGoogleLoginButton = true; // Google 로그인 버튼 표시 여부 (기본값: true)
+  bool showSignUpButton = false; // 회원가입 버튼 표시 여부
+  bool showLocalLoginButton = false; // 로컬 로그인 버튼 표시 여부
+
+  // 설정 변경 메서드
+  void updateButtonSettings({
+    bool? showSignUp,
+    bool? showLocalLogin,
+    bool? showGoogleLogin,
+  }) {
+    if (showSignUp != null) showSignUpButton = showSignUp;
+    if (showLocalLogin != null) showLocalLoginButton = showLocalLogin;
+    if (showGoogleLogin != null) showGoogleLoginButton = showGoogleLogin;
+  }
+
+  // 현재 활성화된 버튼 개수 반환
+  int get activeButtonCount {
+    int count = 0;
+    if (showGoogleLoginButton) count++;
+    if (showSignUpButton) count++;
+    if (showLocalLoginButton) count++;
+    return count;
+  }
+}
+
 // 앱의 진입점 함수
 void main() {
+  // 앱 설정 초기화
+  final appConfig = AppConfig();
+  
+  // 설정 예시들 (원하는 설정으로 변경하세요)
+  
+  // 예시: Google 로그인만 표시
+  // appConfig.updateButtonSettings(
+  //   showGoogleLogin: true,
+  //   showSignUp: false,
+  //   showLocalLogin: false,
+  // );
+
   // Flutter 앱을 실행
   runApp(const MyApp());
 }
@@ -108,6 +153,7 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // 현재 기기의 화면 높이를 가져와서 카드 높이 계산에 사용
     final screenHeight = MediaQuery.of(context).size.height;
+    final appConfig = AppConfig(); // 설정 인스턴스 가져오기
 
     return Scaffold(
       backgroundColor: Colors.black, // 전체 배경을 검정색으로 설정
@@ -126,7 +172,8 @@ class LoginScreen extends StatelessWidget {
           Align(
             alignment: Alignment.bottomCenter, // 하단 중앙 정렬
             child: Container(
-              height: screenHeight * 0.3, // 화면 높이의 30%만큼 사용
+              // 동적 높이 계산: 버튼 개수에 따라 높이 조정
+              height: _calculateCardHeight(screenHeight, appConfig.activeButtonCount),
               width: double.infinity, // 너비는 화면 전체
               padding: EdgeInsets.all(20), // 내부 여백 20px
               decoration: BoxDecoration(
@@ -140,22 +187,8 @@ class LoginScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center, // 가로 중앙 정렬
                 children: [
                   SizedBox(height: 16), // 상단 여백 추가
-                  // 첫 번째 버튼: Google로 계속하기
-                  GoogleLoginButton(),
-                  SizedBox(height: 12), // 버튼 간 여백
-                  // 두 번째 버튼: 회원가입
-                  _buildLoginButton(
-                    "회원가입",
-                    Icons.person_add, // 사람 추가 아이콘
-                    Colors.grey[800]!, // 배경색: 어두운 회색
-                  ),
-                  SizedBox(height: 12), // 버튼 간 여백
-                  // 세 번째 버튼: 일반 로그인
-                  _buildLoginButton(
-                    "로그인",
-                    Icons.person, // 사람 아이콘
-                    Colors.grey[800]!, // 배경색: 어두운 회색 (다른 버튼들과 동일)
-                  ),
+                  // 동적으로 버튼들 생성
+                  ..._buildButtons(appConfig),
                 ],
               ),
             ),
@@ -165,30 +198,45 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  // 로그인 버튼을 생성하는 함수 (재사용 가능)
-  Widget _buildLoginButton(String text, IconData icon, Color color) {
-    return SizedBox(
-      width: double.infinity, // 버튼의 너비를 카드 영역 전체로
-      child: ElevatedButton.icon(
-        onPressed: () {
-          // 버튼 클릭 시 수행할 작업 (현재는 비어 있음)
-        },
-        icon: Icon(icon), // 왼쪽에 표시될 아이콘
-        label: Text(
-          text,
-          style: TextStyle(fontSize: 16), // 글씨 크기를 16으로 설정
-        ), // 버튼 텍스트
-        style: ElevatedButton.styleFrom(
-          foregroundColor: color == Colors.transparent ? Colors.black : Colors.white, // 투명 배경일 때는 검정 텍스트
-          backgroundColor: color, // 버튼 배경색
-          padding: EdgeInsets.symmetric(vertical: 14), // 상하 패딩
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12), // 버튼 모서리 둥글게
-            side: color == Colors.transparent ? BorderSide(color: Colors.grey[400]!, width: 1) : BorderSide.none, // 투명 배경일 때만 테두리 추가
-          ),
-        ),
-      ),
-    );
+  // 카드 높이를 동적으로 계산하는 메서드
+  double _calculateCardHeight(double screenHeight, int buttonCount) {
+    if (buttonCount == 0) {
+      return screenHeight * 0.15; // 버튼이 없으면 최소 높이
+    } else if (buttonCount == 1) {
+      return screenHeight * 0.2; // 버튼 1개
+    } else if (buttonCount == 2) {
+      return screenHeight * 0.25; // 버튼 2개
+    } else {
+      return screenHeight * 0.3; // 버튼 3개 (기존)
+    }
+  }
+
+  // 설정에 따라 버튼들을 동적으로 생성하는 메서드
+  List<Widget> _buildButtons(AppConfig config) {
+    List<Widget> buttons = [];
+
+    // Google 로그인 버튼
+    if (config.showGoogleLoginButton) {
+      buttons.add(GoogleLoginButton());
+      if (config.showSignUpButton || config.showLocalLoginButton) {
+        buttons.add(SizedBox(height: 12));
+      }
+    }
+
+    // 회원가입 버튼
+    if (config.showSignUpButton) {
+      buttons.add(LocalSignUpButton());
+      if (config.showLocalLoginButton) {
+        buttons.add(SizedBox(height: 12));
+      }
+    }
+
+    // 로컬 로그인 버튼
+    if (config.showLocalLoginButton) {
+      buttons.add(LocalSignInButton());
+    }
+
+    return buttons;
   }
 }
 
@@ -204,6 +252,7 @@ class GoogleLoginButton extends StatelessWidget {
 
   // Google 로그인 처리 함수
   void _handleSignIn(BuildContext context) async {
+    print("🔍 로그인 시도");
     try {
       // Google 로그인 시도
       final account = await _googleSignIn.signIn();
@@ -211,12 +260,28 @@ class GoogleLoginButton extends StatelessWidget {
         // 로그인 성공 시
         print("✅ 로그인 성공: ${account.email}");
         // 여기에 Firebase 연동 or 백엔드 처리 등 연결 가능
+        final name = account.displayName;
+        // print("🔍 이름: $name");
+        final email = account.email;
+        // print("🔍 이메일: $email");
+        final photoUrl = account.photoUrl;
+        // print("🔍 프로필 사진: $photoUrl");
+        final serverAuthCode = account.serverAuthCode;
+        // print("🔍 서버 인증 코드: $serverAuthCode");
+        // mounted 체크를 통해 위젯이 여전히 존재하는지 확인
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('환영합니다, $name')),
+          );
+        }
       } else {
         // 로그인 취소 시
         print("❌ 로그인 취소됨");
       }
     } catch (error) {
-      // 로그인 실패 시
+      // 로그인 실패 시 (ex. 구글 계정 선택 후 마지막에 취소 버튼 누르는 경우)
+      // print(error)
+      // PlatformException(sign_in_failed, com.google.GIDSignIn, access_denied, null)
       print("🚨 로그인 실패: $error");
     }
   }
@@ -239,6 +304,356 @@ class GoogleLoginButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.grey[800], // 어두운 회색으로 변경
           foregroundColor: Colors.white, // 텍스트 색상을 흰색으로 변경
+          padding: EdgeInsets.symmetric(vertical: 14), // 상하 패딩
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12), // 버튼 모서리 둥글게
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// 로컬 회원가입 버튼 위젯
+class LocalSignUpButton extends StatelessWidget {
+  // 로컬 회원가입 처리 함수
+  void _handleSignUp(BuildContext context) async {
+    print("🔍 회원가입 시도");
+    try {
+      // 회원가입 다이얼로그 표시
+      final result = await showDialog<Map<String, String>>(
+        context: context,
+        barrierDismissible: false, // 배경 터치로 닫기 방지
+        builder: (BuildContext context) {
+          return SignUpDialog();
+        },
+      );
+      
+      if (result != null) {
+        print("✅ 회원가입 정보: $result");
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('회원가입이 완료되었습니다!')),
+          );
+        }
+      }
+    } catch (error) {
+      print("🚨 회원가입 실패: $error");
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('회원가입 중 오류가 발생했습니다')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity, // 버튼의 너비를 카드 영역 전체로
+      child: ElevatedButton.icon(
+        onPressed: () => _handleSignUp(context), // 회원가입 함수 호출
+        icon: Icon(Icons.person_add), // 사람 추가 아이콘
+        label: Text(
+          "회원가입",
+          style: TextStyle(fontSize: 16), // 글씨 크기를 16으로 설정
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.grey[800], // 어두운 회색
+          foregroundColor: Colors.white, // 텍스트 색상을 흰색으로
+          padding: EdgeInsets.symmetric(vertical: 14), // 상하 패딩
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12), // 버튼 모서리 둥글게
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// 회원가입 다이얼로그 위젯
+class SignUpDialog extends StatefulWidget {
+  @override
+  _SignUpDialogState createState() => _SignUpDialogState();
+}
+
+class _SignUpDialogState extends State<SignUpDialog> {
+  // 텍스트 컨트롤러들
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  
+  // 비밀번호 표시/숨김 상태
+  bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
+  
+  // 폼 검증을 위한 키
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  void dispose() {
+    // 컨트롤러 정리
+    _emailController.dispose();
+    _usernameController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  // 회원가입 처리 함수
+  void _handleSignUp() {
+    if (_formKey.currentState!.validate()) {
+      // 폼이 유효하면 데이터 반환
+      final userData = {
+        'email': _emailController.text.trim(),
+        'username': _usernameController.text.trim(),
+        'password': _passwordController.text,
+      };
+      Navigator.of(context).pop(userData);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: Colors.grey[900], // 다이얼로그 배경색
+      title: Text(
+        '회원가입',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 이메일 입력 필드
+              TextFormField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: '이메일',
+                  labelStyle: TextStyle(color: Colors.grey[400]),
+                  prefixIcon: Icon(Icons.email, color: Colors.grey[400]),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey[600]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.blue),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return '이메일을 입력해주세요';
+                  }
+                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                    return '올바른 이메일 형식을 입력해주세요';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 16),
+              
+              // 사용자명 입력 필드
+              TextFormField(
+                controller: _usernameController,
+                style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: '사용자명',
+                  labelStyle: TextStyle(color: Colors.grey[400]),
+                  prefixIcon: Icon(Icons.person, color: Colors.grey[400]),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey[600]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.blue),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return '사용자명을 입력해주세요';
+                  }
+                  if (value.length < 2) {
+                    return '사용자명은 2자 이상 입력해주세요';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 16),
+              
+              // 비밀번호 입력 필드
+              TextFormField(
+                controller: _passwordController,
+                obscureText: !_isPasswordVisible,
+                style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: '비밀번호',
+                  labelStyle: TextStyle(color: Colors.grey[400]),
+                  prefixIcon: Icon(Icons.lock, color: Colors.grey[400]),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                      color: Colors.grey[400],
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isPasswordVisible = !_isPasswordVisible;
+                      });
+                    },
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey[600]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.blue),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return '비밀번호를 입력해주세요';
+                  }
+                  if (value.length < 6) {
+                    return '비밀번호는 6자 이상 입력해주세요';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 16),
+              
+              // 비밀번호 확인 입력 필드
+              TextFormField(
+                controller: _confirmPasswordController,
+                obscureText: !_isConfirmPasswordVisible,
+                style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: '비밀번호 확인',
+                  labelStyle: TextStyle(color: Colors.grey[400]),
+                  prefixIcon: Icon(Icons.lock_outline, color: Colors.grey[400]),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                      color: Colors.grey[400],
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                      });
+                    },
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey[600]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.blue),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return '비밀번호 확인을 입력해주세요';
+                  }
+                  if (value != _passwordController.text) {
+                    return '비밀번호가 일치하지 않습니다';
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        // 취소 버튼
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop(); // 다이얼로그 닫기
+          },
+          child: Text(
+            '취소',
+            style: TextStyle(color: Colors.grey[400]),
+          ),
+        ),
+        // 회원가입 버튼
+        ElevatedButton(
+          onPressed: _handleSignUp,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          child: Text('회원가입'),
+        ),
+      ],
+    );
+  }
+}
+
+// 로컬 로그인 버튼 위젯
+class LocalSignInButton extends StatelessWidget {
+  // 로컬 로그인 처리 함수
+  void _handleSignIn(BuildContext context) async {
+    print("🔍 로컬 로그인 시도");
+    try {
+      // 여기에 로컬 로그인 로직 구현
+      // 예: 이메일/비밀번호 입력 다이얼로그, API 호출 등
+      print("✅ 로컬 로그인 화면으로 이동");
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('로그인 기능은 준비 중입니다')),
+        );
+      }
+    } catch (error) {
+      print("🚨 로컬 로그인 실패: $error");
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('로그인 중 오류가 발생했습니다')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity, // 버튼의 너비를 카드 영역 전체로
+      child: ElevatedButton.icon(
+        onPressed: () => _handleSignIn(context), // 로컬 로그인 함수 호출
+        icon: Icon(Icons.person), // 사람 아이콘
+        label: Text(
+          "로그인",
+          style: TextStyle(fontSize: 16), // 글씨 크기를 16으로 설정
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.grey[800], // 어두운 회색
+          foregroundColor: Colors.white, // 텍스트 색상을 흰색으로
           padding: EdgeInsets.symmetric(vertical: 14), // 상하 패딩
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12), // 버튼 모서리 둥글게
