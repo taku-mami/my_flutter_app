@@ -2,6 +2,9 @@
 import 'package:flutter/material.dart';
 // Google Sign-In 기능을 위한 패키지
 import 'package:google_sign_in/google_sign_in.dart';
+// Firebase 관련 패키지들
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 // SVG 이미지를 사용하기 위한 패키지
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -39,7 +42,13 @@ class AppConfig {
 }
 
 // 앱의 진입점 함수
-void main() {
+void main() async {
+  // Flutter 엔진 초기화
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Firebase 초기화 (iOS 13.0 업데이트 후 활성화)
+  await Firebase.initializeApp();
+  
   // 앱 설정 초기화
   final appConfig = AppConfig();
   
@@ -51,7 +60,7 @@ void main() {
   //   showSignUp: false,
   //   showLocalLogin: false,
   // );
-
+  
   // Flutter 앱을 실행
   runApp(const MyApp());
 }
@@ -250,39 +259,142 @@ class GoogleLoginButton extends StatelessWidget {
     ],
   );
 
-  // Google 로그인 처리 함수
+  // Google 로그인 처리 함수 (Firebase 연동)
   void _handleSignIn(BuildContext context) async {
     print("🔍 로그인 시도");
     try {
-      // Google 로그인 시도
-      final account = await _googleSignIn.signIn();
-      if (account != null) {
-        // 로그인 성공 시
-        print("✅ 로그인 성공: ${account.email}");
-        // 여기에 Firebase 연동 or 백엔드 처리 등 연결 가능
-        final name = account.displayName;
-        // print("🔍 이름: $name");
-        final email = account.email;
-        // print("🔍 이메일: $email");
-        final photoUrl = account.photoUrl;
-        // print("🔍 프로필 사진: $photoUrl");
-        final serverAuthCode = account.serverAuthCode;
-        // print("🔍 서버 인증 코드: $serverAuthCode");
-        // mounted 체크를 통해 위젯이 여전히 존재하는지 확인
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('환영합니다, $name')),
-          );
+      // 1. Google 로그인 시도
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      
+      if (googleUser != null) {
+        print("✅ Google 로그인 성공: ${googleUser.email}");
+        
+        // Firebase가 초기화되지 않은 경우 기본 Google 정보만 사용
+        try {
+          // 2. Google 인증 정보 가져오기
+          final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+          
+          print("🔍 Google Access Token: ${googleAuth.accessToken?.substring(0, 20)}...");
+          print("🔍 Google ID Token: ${googleAuth.idToken?.substring(0, 20)}...");
+          
+          // Firebase가 사용 가능한지 확인
+          try {
+            // 3. Firebase 인증 정보 생성
+            final credential = GoogleAuthProvider.credential(
+              accessToken: googleAuth.accessToken,
+              idToken: googleAuth.idToken,
+            );
+            
+            // 4. Firebase에 로그인하여 ID 토큰 받기
+            final UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+            final User? user = userCredential.user;
+            
+            if (user != null) {
+              // 5. Firebase ID 토큰 가져오기
+              final String? idToken = await user.getIdToken();
+              
+              print("✅ Firebase 로그인 성공!");
+              print("🔍 Firebase UID: ${user.uid}");
+              print("🔍 Firebase 이메일: ${user.email}");
+              print("🔍 Firebase ID 토큰: ${idToken?.substring(0, 50)}..."); // 토큰 일부만 출력
+              
+              // 6. 사용자 정보 출력
+              final name = user.displayName ?? googleUser.displayName;
+              print("🔍 이름: $name");
+              print("🔍 이메일: ${user.email}");
+              print("🔍 프로필 사진: ${user.photoURL}");
+              
+              // 7. 성공 메시지 표시
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text("안녕하세요 ${user.displayName}님"),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              }
+              
+              // 8. ID 토큰을 서버로 전송하는 예시 (실제 구현 시)
+              // await _sendTokenToServer(idToken);
+              
+            } else {
+              print("❌ Firebase 로그인 실패");
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Firebase 로그인에 실패했습니다'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            }
+          } catch (firebaseError) {
+            // Firebase가 사용 불가능한 경우 기본 Google 정보만 사용
+            print("⚠️ Firebase 사용 불가: $firebaseError");
+            print("📝 기본 Google 로그인 정보 사용");
+            
+            final name = googleUser.displayName;
+            final email = googleUser.email;
+            final photoUrl = googleUser.photoUrl;
+            
+            print("🔍 이름: $name");
+            print("🔍 이메일: $email");
+            print("🔍 프로필 사진: $photoUrl");
+            
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Google 로그인 성공! (Firebase 미연동)'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+            }
+          }
+          
+        } catch (authError) {
+          print("❌ Google 인증 정보 가져오기 실패: $authError");
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Google 인증 정보를 가져올 수 없습니다'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
         }
+        
       } else {
         // 로그인 취소 시
         print("❌ 로그인 취소됨");
       }
     } catch (error) {
-      // 로그인 실패 시 (ex. 구글 계정 선택 후 마지막에 취소 버튼 누르는 경우)
-      // print(error)
-      // PlatformException(sign_in_failed, com.google.GIDSignIn, access_denied, null)
+      // 로그인 실패 시
       print("🚨 로그인 실패: $error");
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('로그인 중 오류가 발생했습니다: $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  // ID 토큰을 서버로 전송하는 함수 (예시)
+  Future<void> _sendTokenToServer(String? idToken) async {
+    if (idToken == null) return;
+    
+    try {
+      // 여기에 서버 API 호출 로직 구현
+      print("📤 서버로 ID 토큰 전송 중...");
+      // final response = await http.post(
+      //   Uri.parse('https://your-api.com/auth/google'),
+      //   headers: {'Authorization': 'Bearer $idToken'},
+      // );
+      print("✅ 서버 전송 완료");
+    } catch (error) {
+      print("❌ 서버 전송 실패: $error");
     }
   }
 
