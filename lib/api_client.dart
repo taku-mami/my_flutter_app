@@ -31,7 +31,7 @@ class ApiResponse<T> {
 // API 클라이언트 클래스
 class ApiClient {
   static const String _baseUrl = 'http://sungtak.iptime.org:8000'; // 실제 API 서버 URL로 변경
-  static const Duration _timeout = Duration(seconds: 10);
+  static const Duration _timeout = Duration(seconds: 2);
 
   late Dio _dio;
 

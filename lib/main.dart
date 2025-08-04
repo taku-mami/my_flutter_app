@@ -306,17 +306,24 @@ class GoogleLoginButton extends StatelessWidget {
               
               // 7. 서버로 Firebase ID 토큰 전송
               if (idToken != null) {
-                await _sendTokenToServer(idToken);
-              }
-              
-              // 8. 성공 메시지 표시
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Firebase 로그인 성공! UID: ${user.uid}'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
+                final serverResponse = await _sendTokenToServer(idToken);
+                
+                // 8. 서버 검증 성공 시에만 성공 메시지 표시
+                if (serverResponse && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('서버 인증 성공! UID: ${user.uid}'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                } else if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('서버 인증에 실패했습니다'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
               }
               
             } else {
@@ -383,8 +390,8 @@ class GoogleLoginButton extends StatelessWidget {
   }
 
   // ID 토큰을 서버로 전송하는 함수
-  Future<void> _sendTokenToServer(String? idToken) async {
-    if (idToken == null) return;
+  Future<bool> _sendTokenToServer(String? idToken) async {
+    if (idToken == null) return false;
     
     try {
       print("📤 서버로 Firebase ID 토큰 전송 중...");
@@ -395,11 +402,14 @@ class GoogleLoginButton extends StatelessWidget {
       
       if (response.success) {
         print("✅ 서버 전송 성공: ${response.data}");
+        return true; // 서버 검증 성공
       } else {
         print("❌ 서버 전송 실패: ${response.message}");
+        return false; // 서버 검증 실패
       }
     } catch (error) {
       print("❌ 서버 전송 중 오류: $error");
+      return false; // 서버 전송 중 오류
     }
   }
 
