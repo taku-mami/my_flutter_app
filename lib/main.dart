@@ -7,6 +7,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 // SVG 이미지를 사용하기 위한 패키지
 import 'package:flutter_svg/flutter_svg.dart';
+import 'dart:convert'; // Base64 디코딩을 위한 패키지
+// API 클라이언트
+import 'api_client.dart';
 
 // 앱 설정을 관리하는 클래스
 class AppConfig {
@@ -274,8 +277,8 @@ class GoogleLoginButton extends StatelessWidget {
           // 2. Google 인증 정보 가져오기
           final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
           
-          print("🔍 Google Access Token: ${googleAuth.accessToken?.substring(0, 20)}...");
-          print("🔍 Google ID Token: ${googleAuth.idToken?.substring(0, 20)}...");
+          // JWT 토큰 구조 분석
+          // _decodeJwtToken(googleAuth.idToken);
           
           // Firebase가 사용 가능한지 확인
           try {
@@ -294,9 +297,6 @@ class GoogleLoginButton extends StatelessWidget {
               final String? idToken = await user.getIdToken();
               
               print("✅ Firebase 로그인 성공!");
-              print("🔍 Firebase UID: ${user.uid}");
-              print("🔍 Firebase 이메일: ${user.email}");
-              print("🔍 Firebase ID 토큰: ${idToken?.substring(0, 50)}..."); // 토큰 일부만 출력
               
               // 6. 사용자 정보 출력
               final name = user.displayName ?? googleUser.displayName;
@@ -304,18 +304,20 @@ class GoogleLoginButton extends StatelessWidget {
               print("🔍 이메일: ${user.email}");
               print("🔍 프로필 사진: ${user.photoURL}");
               
-              // 7. 성공 메시지 표시
+              // 7. 서버로 Firebase ID 토큰 전송
+              if (idToken != null) {
+                await _sendTokenToServer(idToken);
+              }
+              
+              // 8. 성공 메시지 표시
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text("안녕하세요 ${user.displayName}님"),
+                    content: Text('Firebase 로그인 성공! UID: ${user.uid}'),
                     backgroundColor: Colors.green,
                   ),
                 );
               }
-              
-              // 8. ID 토큰을 서버로 전송하는 예시 (실제 구현 시)
-              // await _sendTokenToServer(idToken);
               
             } else {
               print("❌ Firebase 로그인 실패");
@@ -331,7 +333,6 @@ class GoogleLoginButton extends StatelessWidget {
           } catch (firebaseError) {
             // Firebase가 사용 불가능한 경우 기본 Google 정보만 사용
             print("⚠️ Firebase 사용 불가: $firebaseError");
-            print("📝 기본 Google 로그인 정보 사용");
             
             final name = googleUser.displayName;
             final email = googleUser.email;
@@ -381,20 +382,53 @@ class GoogleLoginButton extends StatelessWidget {
     }
   }
 
-  // ID 토큰을 서버로 전송하는 함수 (예시)
+  // ID 토큰을 서버로 전송하는 함수
   Future<void> _sendTokenToServer(String? idToken) async {
     if (idToken == null) return;
     
     try {
-      // 여기에 서버 API 호출 로직 구현
-      print("📤 서버로 ID 토큰 전송 중...");
-      // final response = await http.post(
-      //   Uri.parse('https://your-api.com/auth/google'),
-      //   headers: {'Authorization': 'Bearer $idToken'},
-      // );
-      print("✅ 서버 전송 완료");
+      print("📤 서버로 Firebase ID 토큰 전송 중...");
+      
+      // API 클라이언트 사용
+      final apiClient = ApiClient();
+      final response = await apiClient.loginWithGoogle(idToken);
+      
+      if (response.success) {
+        print("✅ 서버 전송 성공: ${response.data}");
+      } else {
+        print("❌ 서버 전송 실패: ${response.message}");
+      }
     } catch (error) {
-      print("❌ 서버 전송 실패: $error");
+      print("❌ 서버 전송 중 오류: $error");
+    }
+  }
+
+  // JWT 토큰 디코딩 함수
+  void _decodeJwtToken(String? token) {
+    if (token == null) return;
+    
+    try {
+      // JWT는 3부분으로 구성: header.payload.signature
+      final parts = token.split('.');
+      if (parts.length == 3) {
+        print("🔍 JWT 토큰 구조:");
+        print("  Header: ${parts[0]}");
+        print("  Payload: ${parts[1]}");
+        print("  Signature: ${parts[2]}"); // 전체 시그니처 표시
+        
+        // Base64 디코딩 (간단한 방법)
+        try {
+          final payload = parts[1];
+          // Base64 패딩 추가
+          final paddedPayload = payload + '=' * (4 - payload.length % 4);
+          final decodedPayload = utf8.decode(base64Url.decode(paddedPayload));
+          print("  Decoded Payload: $decodedPayload");
+        } catch (e) {
+          print("  Payload 디코딩 실패: $e");
+        }
+      }
+    } catch (e) {
+      print("❌ JWT 디코딩 실패: $e");
     }
   }
 
