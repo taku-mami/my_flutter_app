@@ -10,6 +10,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:convert'; // Base64 디코딩을 위한 패키지
 // API 클라이언트
 import 'api_client.dart';
+// 메인 랜딩 페이지
+import 'main_landing_page.dart';
 
 // 앱 설정을 관리하는 클래스
 class AppConfig {
@@ -76,6 +78,25 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData.dark().copyWith(
+        // 다크 테마 기본 설정
+        brightness: Brightness.dark,
+        primaryColor: Colors.blue,
+        // 키보드 관련 색상 설정
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.grey[800],
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(25.0),
+            borderSide: BorderSide.none,
+          ),
+        ),
+        // 텍스트 입력 필드 스타일
+        textTheme: const TextTheme(
+          bodyLarge: TextStyle(color: Colors.white),
+          bodyMedium: TextStyle(color: Colors.white),
+        ),
+      ),
       home: LoginScreen(), // 메인 화면으로 LoginScreen을 지정
       debugShowCheckedModeBanner: false, // 디버그 배너 제거 (우상단의 DEBUG 표시 제거)
     );
@@ -308,7 +329,7 @@ class GoogleLoginButton extends StatelessWidget {
               if (idToken != null) {
                 final serverResponse = await _sendTokenToServer(idToken);
                 
-                // 8. 서버 검증 성공 시에만 성공 메시지 표시
+                // 8. 서버 검증 성공 시에만 성공 메시지 표시 및 메인 페이지로 이동
                 if (serverResponse && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -316,6 +337,17 @@ class GoogleLoginButton extends StatelessWidget {
                       backgroundColor: Colors.green,
                     ),
                   );
+                  
+                  // 잠시 후 메인 랜딩 페이지로 이동
+                  Future.delayed(const Duration(seconds: 2), () {
+                    if (context.mounted) {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder: (context) => const MainLandingPage(),
+                        ),
+                      );
+                    }
+                  });
                 } else if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
