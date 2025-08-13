@@ -20,6 +20,9 @@ class AppConfig {
   factory AppConfig() => _instance;
   AppConfig._internal();
 
+  // 개발모드 설정
+  bool isDevelopmentMode = true; // 개발모드 여부 (기본값: true)
+  
   // 버튼 표시 설정
   bool showGoogleLoginButton = true; // Google 로그인 버튼 표시 여부 (기본값: true)
   bool showSignUpButton = false; // 회원가입 버튼 표시 여부
@@ -34,6 +37,11 @@ class AppConfig {
     if (showSignUp != null) showSignUpButton = showSignUp;
     if (showLocalLogin != null) showLocalLoginButton = showLocalLogin;
     if (showGoogleLogin != null) showGoogleLoginButton = showGoogleLogin;
+  }
+  
+  // 개발모드 설정 변경 메서드
+  void setDevelopmentMode(bool isDev) {
+    isDevelopmentMode = isDev;
   }
 
   // 현재 활성화된 버튼 개수 반환
@@ -65,6 +73,8 @@ void main() async {
   //   showSignUp: false,
   //   showLocalLogin: false,
   // );
+
+  // appConfig.setDevelopmentMode(true);
   
   // Flutter 앱을 실행
   runApp(const MyApp());
@@ -325,37 +335,49 @@ class GoogleLoginButton extends StatelessWidget {
               print("🔍 이메일: ${user.email}");
               print("🔍 프로필 사진: ${user.photoURL}");
               
-              // 7. 서버로 Firebase ID 토큰 전송
-              if (idToken != null) {
-                final serverResponse = await _sendTokenToServer(idToken);
+              // 7. 서버 검증 (개발모드일 때는 스킵)
+              bool serverResponse = false;
+              
+              if (AppConfig().isDevelopmentMode) {
+                // 개발모드: 서버 검증 스킵
+                print("🔧 개발모드: 서버 검증 스킵");
+                serverResponse = true;
+              } else if (idToken != null) {
+                // 프로덕션 모드: 서버 검증 수행
+                print("🌐 프로덕션 모드: 서버 검증 수행");
+                serverResponse = await _sendTokenToServer(idToken);
+              }
+              
+              // 8. 검증 성공 시 성공 메시지 표시 및 메인 페이지로 이동
+              if (serverResponse && context.mounted) {
+                final message = AppConfig().isDevelopmentMode 
+                    ? '개발모드: 서버 검증 스킵됨! UID: ${user.uid}'
+                    : '서버 인증 성공! UID: ${user.uid}';
+                    
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(message),
+                    backgroundColor: AppConfig().isDevelopmentMode ? Colors.orange : Colors.green,
+                  ),
+                );
                 
-                // 8. 서버 검증 성공 시에만 성공 메시지 표시 및 메인 페이지로 이동
-                if (serverResponse && context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('서버 인증 성공! UID: ${user.uid}'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                  
-                  // 잠시 후 메인 랜딩 페이지로 이동
-                  Future.delayed(const Duration(seconds: 2), () {
-                    if (context.mounted) {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => const MainLandingPage(),
-                        ),
-                      );
-                    }
-                  });
-                } else if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('서버 인증에 실패했습니다'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
+                // 잠시 후 메인 랜딩 페이지로 이동
+                Future.delayed(const Duration(milliseconds: 200), () {
+                  if (context.mounted) {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(
+                        builder: (context) => const MainLandingPage(),
+                      ),
+                    );
+                  }
+                });
+              } else if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('서버 인증에 실패했습니다'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
               }
               
             } else {
