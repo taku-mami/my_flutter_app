@@ -229,7 +229,7 @@ class LoginScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start, // 상단 정렬로 변경
                 crossAxisAlignment: CrossAxisAlignment.center, // 가로 중앙 정렬
                 children: [
-                  SizedBox(height: 16), // 상단 여백 추가
+                  SizedBox(height: 6), // 상단 여백 추가
                   // 동적으로 버튼들 생성
                   ..._buildButtons(appConfig),
                 ],
@@ -246,7 +246,7 @@ class LoginScreen extends StatelessWidget {
     if (buttonCount == 0) {
       return screenHeight * 0.15; // 버튼이 없으면 최소 높이
     } else if (buttonCount == 1) {
-      return screenHeight * 0.2; // 버튼 1개
+      return screenHeight * 0.15; // 버튼 1개
     } else if (buttonCount == 2) {
       return screenHeight * 0.25; // 버튼 2개
     } else {
