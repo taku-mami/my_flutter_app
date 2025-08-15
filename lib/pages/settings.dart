@@ -30,8 +30,9 @@ class SettingsPage extends StatelessWidget {
         ),
         child: SafeArea(
           child: Column(
-            children: [
-
+            children: [         
+              // 상단 여백
+              const SizedBox(height: 24.0),
               
               // 설정 메뉴들
               Expanded(

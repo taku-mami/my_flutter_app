@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_app_bar.dart';
 import '../services/auth.dart';
+import '../widgets/app_drawer.dart';
 
 class ServicePage extends StatelessWidget {
   const ServicePage({super.key});
@@ -13,7 +14,7 @@ class ServicePage extends StatelessWidget {
         preferredSize: const Size.fromHeight(66.0), // 50 + 16
         child: Builder(
           builder: (context) => CustomAppBar(
-            title: '서비스 소개',
+            title: '서비스',
             showMenuButton: true,
             onMenuPressed: () {
               Scaffold.of(context).openDrawer();
@@ -21,7 +22,7 @@ class ServicePage extends StatelessWidget {
           ),
         ),
       ),
-      drawer: _buildDrawer(context),
+      drawer: const AppDrawer(),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -36,7 +37,8 @@ class ServicePage extends StatelessWidget {
         child: SafeArea(
           child: Column(
             children: [
-
+              // 상단 여백
+              const SizedBox(height: 24.0),
               
               // 서비스 소개 헤더
               Container(
@@ -53,8 +55,8 @@ class ServicePage extends StatelessWidget {
                 child: Column(
                   children: [
                     Container(
-                      width: 80,
-                      height: 80,
+                      width: 200,
+                      height: 100,
                       decoration: BoxDecoration(
                         color: Colors.blue[600],
                         shape: BoxShape.circle,
@@ -84,7 +86,7 @@ class ServicePage extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '지능형 대화 어시스턴트와 함께\n새로운 경험을 시작하세요',
+                      '해운대 DIVE와 함께\n새로운 경험을 시작하세요',
                       style: TextStyle(
                         color: Colors.grey[400],
                         fontSize: 16,
@@ -158,35 +160,35 @@ class ServicePage extends StatelessWidget {
                 ),
               ),
               
-              // 하단 버튼
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue[600],
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(28),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      '시작하기',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+              // // 하단 버튼
+              // Padding(
+              //   padding: const EdgeInsets.all(20),
+              //   child: SizedBox(
+              //     width: double.infinity,
+              //     height: 56,
+              //     child: ElevatedButton(
+              //       onPressed: () {
+              //         Navigator.of(context).pop();
+              //       },
+              //       style: ElevatedButton.styleFrom(
+              //         backgroundColor: Colors.blue[600],
+              //         foregroundColor: Colors.white,
+              //         shape: RoundedRectangleBorder(
+              //           borderRadius: BorderRadius.circular(28),
+              //         ),
+              //         elevation: 0,
+              //       ),
+              //       child: const Text(
+              //         '시작하기',
+              //         style: TextStyle(
+              //           fontSize: 18,
+              //           fontWeight: FontWeight.bold,
+              //           letterSpacing: 0.5,
+              //         ),
+              //       ),
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         ),
@@ -194,140 +196,7 @@ class ServicePage extends StatelessWidget {
     );
   }
   
-  // 드로어 메뉴 위젯
-  Widget _buildDrawer(BuildContext context) {
-    return Drawer(
-      backgroundColor: Colors.black,
-      child: Column(
-        children: [
-          // 드로어 헤더
-          Container(
-            padding: const EdgeInsets.only(
-              top: 50.0,
-              left: 16.0,
-              right: 16.0,
-              bottom: 16.0,
-            ),
-            decoration: const BoxDecoration(
-              color: Colors.black,
-            ),
-            child: Row(
-              children: [
-                // 사용자 프로필 아이콘
-                Container(
-                  width: 50.0,
-                  height: 50.0,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    image: DecorationImage(
-                      image: NetworkImage(AuthService().currentUser?.photoURL ?? ''),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16.0),
-                // 사용자 정보
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        AuthService().currentUser?.displayName ?? '사용자',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        AuthService().currentUser?.email ?? '이메일 없음',
-                        style: TextStyle(
-                          color: Colors.grey[400],
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-          // 메뉴 아이템들
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                _buildDrawerItem(
-                  icon: Icons.chat,
-                  title: '홈',
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, '/');
-                  },
-                ),
-                _buildDrawerItem(
-                  icon: Icons.map,
-                  title: '서비스',
-                  onTap: () {
-                    Navigator.pop(context);
-                    // 이미 서비스 페이지에 있으므로 아무 동작 안함
-                  },
-                ),
-                _buildDrawerItem(
-                  icon: Icons.settings,
-                  title: '설정',
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, '/settings');
-                  },
-                ),
-              ],
-            ),
-          ),
-          
-          // 하단 로그아웃 버튼
-          Container(
-            padding: const EdgeInsets.all(16.0),
-            child: _buildDrawerItem(
-              icon: Icons.logout,
-              title: '로그아웃',
-              onTap: () {
-                Navigator.pop(context);
-                AuthService().signOut();
-                Navigator.pushNamed(context, '/');
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  // 드로어 메뉴 아이템 위젯
-  Widget _buildDrawerItem({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: Colors.white,
-        size: 24,
-      ),
-      title: Text(
-        title,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 16,
-        ),
-      ),
-      onTap: onTap,
-      tileColor: Colors.transparent,
-      hoverColor: Colors.grey[800],
-    );
-  }
+
   
   Widget _buildFeatureCard({
     required IconData icon,
