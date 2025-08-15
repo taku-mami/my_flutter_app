@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:my_flutter_app/pages/login.dart';
+import '../utils/config.dart';
+import '../services/auth.dart';
+import '../widgets/custom_app_bar.dart';
 
-class MainLandingPage extends StatefulWidget {
-  const MainLandingPage({super.key});
+class Landing extends StatefulWidget {
+  const Landing({super.key});
 
   @override
-  State<MainLandingPage> createState() => _MainLandingPageState();
+  State<Landing> createState() => _LandingState();
 }
 
-class _MainLandingPageState extends State<MainLandingPage> {
+class _LandingState extends State<Landing> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   bool _isDrawerOpen = false; // 드로어 상태 추적
@@ -71,7 +75,7 @@ class _MainLandingPageState extends State<MainLandingPage> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     image: DecorationImage(
-                      image: NetworkImage('https://lh3.googleusercontent.com/a/ACg8ocLdZ3eCAtrZnVlefyD5Ogir8lB_WiBspmiyM3vhn0_nG7IpaHQ=s96-c'),
+                      image: NetworkImage(AuthService().currentUser?.photoURL ?? ''),
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -83,7 +87,7 @@ class _MainLandingPageState extends State<MainLandingPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'mami yoon', // Google 계정 이름
+                        AuthService().currentUser?.displayName ?? '사용자', // Google 계정 이름
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 18,
@@ -91,7 +95,7 @@ class _MainLandingPageState extends State<MainLandingPage> {
                         ),
                       ),
                       Text(
-                        'y.mami0812@gmail.com', // Google 계정 이메일
+                        AuthService().currentUser?.email ?? '이메일 없음', // Google 계정 이메일
                         style: TextStyle(
                           color: Colors.grey[400],
                           fontSize: 14,
@@ -114,7 +118,7 @@ class _MainLandingPageState extends State<MainLandingPage> {
                   title: '홈',
                   onTap: () {
                     Navigator.pop(context); // 드로어 닫기
-                    print('챗봇 대화 메뉴 클릭');
+                    // 이미 홈 페이지에 있으므로 아무 동작 안함
                   },
                 ),
                 _buildDrawerItem(
@@ -122,7 +126,7 @@ class _MainLandingPageState extends State<MainLandingPage> {
                   title: '서비스',
                   onTap: () {
                     Navigator.pop(context); // 드로어 닫기
-                    print('챗봇 대화 메뉴 클릭');
+                    Navigator.pushNamed(context, '/service');
                   },
                 ),
                 _buildDrawerItem(
@@ -130,7 +134,7 @@ class _MainLandingPageState extends State<MainLandingPage> {
                   title: '설정',
                   onTap: () {
                     Navigator.pop(context); // 드로어 닫기
-                    print('설정 메뉴 클릭');
+                    Navigator.pushNamed(context, '/settings');
                   },
                 ),
               ],
@@ -146,7 +150,8 @@ class _MainLandingPageState extends State<MainLandingPage> {
               onTap: () {
                 Navigator.pop(context); // 드로어 닫기
                 print('로그아웃 메뉴 클릭');
-                // 로그아웃 로직 추가 예정
+                AuthService().signOut();
+                Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
               },
             ),
           ),
@@ -199,64 +204,14 @@ class _MainLandingPageState extends State<MainLandingPage> {
             child: Column(
               children: [
                 // 상단 앱바
-                Container(
-                  padding: const EdgeInsets.only(
-                    top: 50.0, // 상단 여백 늘림 (상태바 + 추가 여백)
-                    left: 16.0,
-                    right: 16.0,
-                    bottom: 0.0, // 하단 여백 줄임
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black, // 메인 배경과 같은 검은색
-                    // border: Border(
-                    //   bottom: BorderSide(
-                    //     color: Colors.grey[800]!,
-                    //     width: 1.0,
-                    //   ),
-                    // ),
-                  ),
-                  child: Row(
-                    children: [
-                      // 햄버거 메뉴 버튼
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black, // 메인 배경과 같은 검은색
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        child: Builder(
-                          builder: (context) => IconButton(
-                            onPressed: () {
-                              // 왼쪽에서 드로어 메뉴 열기
-                              Scaffold.of(context).openDrawer();
-                            },
-                            icon: const Icon(
-                              Icons.menu,
-                              color: Colors.white,
-                              size: 24,
-                            ),
-                            padding: const EdgeInsets.all(8.0),
-                            constraints: const BoxConstraints(
-                              minWidth: 40.0,
-                              minHeight: 40.0,
-                            ),
-                          ),
-                        ),
-                      ),
-                      
-                      const SizedBox(width: 16.0),
-                      
-                      // 제목 텍스트
-                      Expanded(
-                        child: Text(
-                          'AI 챗봇',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
+                Builder(
+                  builder: (context) => CustomAppBar(
+                    title: '해운대 DIVE',
+                    showMenuButton: true,
+                    onMenuPressed: () {
+                      // 왼쪽에서 드로어 메뉴 열기
+                      Scaffold.of(context).openDrawer();
+                    },
                   ),
                 ),
                 
@@ -274,27 +229,10 @@ class _MainLandingPageState extends State<MainLandingPage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              '환영합니다!',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 32,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            Text(
-                              '로그인에 성공했습니다',
+                              '${AuthService().currentUser?.displayName}님, 반갑습니다.',
                               style: TextStyle(
                                 color: Colors.grey[400],
                                 fontSize: 18,
-                              ),
-                            ),
-                            const SizedBox(height: 40),
-                            Text(
-                              '챗봇과 대화를 시작하세요',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 16,
                               ),
                             ),
                           ],
