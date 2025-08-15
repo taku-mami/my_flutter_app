@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 // Firebase 관련 패키지들
 import 'package:firebase_core/firebase_core.dart';
+// 카카오 지도 플러그인
+import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 // 페이지들
 import 'pages/login.dart';
 import 'pages/landing.dart';
@@ -20,8 +22,11 @@ void main() async {
   // Firebase 초기화
   await Firebase.initializeApp();
   
+  // 카카오 지도 플러그인 초기화
+  AuthRepository.initialize(appKey: Config.kakaoMapApiKey);
+  
   // 앱 설정 초기화
-  final appConfig = AppConfig();
+  // final appConfig = AppConfig(); // 주석 처리
   
   // Flutter 앱을 실행
   runApp(const MyApp());
@@ -35,7 +40,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: AppConfig().appName,
+      title: Config.appName,
       theme: ThemeData.dark().copyWith(
         // 다크 테마 기본 설정
         brightness: Brightness.dark,

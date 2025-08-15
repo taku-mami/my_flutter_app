@@ -44,6 +44,9 @@ dependencies:
   
   # HTTP client
   dio: ^5.4.0
+  
+  # Kakao Map Plugin
+  kakao_map_plugin: ^0.3.7
 
 dev_dependencies:
   flutter_test:

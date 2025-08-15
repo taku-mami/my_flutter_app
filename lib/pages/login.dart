@@ -142,7 +142,7 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(height: 20),
                       
                       // 개발 모드 표시
-                      if (AppConfig().isDevelopmentMode)
+                      if (Config.isDevelopmentMode)
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16,
