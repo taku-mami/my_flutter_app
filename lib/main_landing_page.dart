@@ -111,7 +111,15 @@ class _MainLandingPageState extends State<MainLandingPage> {
               children: [
                 _buildDrawerItem(
                   icon: Icons.chat,
-                  title: '챗봇 대화',
+                  title: '홈',
+                  onTap: () {
+                    Navigator.pop(context); // 드로어 닫기
+                    print('챗봇 대화 메뉴 클릭');
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.map,
+                  title: '서비스',
                   onTap: () {
                     Navigator.pop(context); // 드로어 닫기
                     print('챗봇 대화 메뉴 클릭');
@@ -123,22 +131,6 @@ class _MainLandingPageState extends State<MainLandingPage> {
                   onTap: () {
                     Navigator.pop(context); // 드로어 닫기
                     print('설정 메뉴 클릭');
-                  },
-                ),
-                _buildDrawerItem(
-                  icon: Icons.help,
-                  title: '도움말',
-                  onTap: () {
-                    Navigator.pop(context); // 드로어 닫기
-                    print('도움말 메뉴 클릭');
-                  },
-                ),
-                _buildDrawerItem(
-                  icon: Icons.info,
-                  title: '정보',
-                  onTap: () {
-                    Navigator.pop(context); // 드로어 닫기
-                    print('정보 메뉴 클릭');
                   },
                 ),
               ],
