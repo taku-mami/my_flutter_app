@@ -23,7 +23,7 @@ void main() async {
   await Firebase.initializeApp();
   
   // 카카오 지도 플러그인 초기화
-  AuthRepository.initialize(appKey: Config.kakaoMapApiKey);
+  AuthRepository.initialize(appKey: Config.kakaoJavaScriptKey);
   
   // 앱 설정 초기화
   // final appConfig = AppConfig(); // 주석 처리

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/app_drawer.dart';
+import 'dart:convert';
 
 class ServicePage extends StatefulWidget {
   const ServicePage({super.key});
@@ -16,9 +17,114 @@ class _ServicePageState extends State<ServicePage> {
   final LatLng seomyeonStation = LatLng(35.157759003, 129.059317193); // 서면역 좌표
   final LatLng jeonpoStation = LatLng(35.152854756, 129.065219588); // 전포역 좌표
 
+  Marker? originMarker;
   Marker? destinationMarker;
   Polyline? routePolyline;
   bool _isMapReady = false;
+
+  /// 도보 경로 정보를 반환하는 임시 함수 (하드코딩)
+  String getWalkRoute({
+    required LatLng origin,
+    required LatLng destination,
+    List<LatLng>? waypoints,
+  }) {
+    // 하드코딩된 경로 정보 반환
+    final routeData = {
+      "trans_id": "01872ad0a5577deeadc7f87ba0ec2936",
+      "routes": [
+        {
+          "result_code": 0,
+          "result_message": "성공",
+          "summary": {
+            "distance": 1257,
+            "duration": 1203
+          },
+          "sections": [
+            {
+              "distance": 246,
+              "duration": 258,
+              "roads": [
+                {
+                  "distance": 22,
+                  "duration": 20,
+                  "vertexes": [
+                    129.059317193, 35.157759003,
+                    129.05925709392375, 35.1545045757588
+                  ]
+                },
+                {
+                  "distance": 57,
+                  "duration": 51,
+                  "vertexes": [
+                    129.05925709392375, 35.1545045757588,
+                    129.06515984956937, 35.15448517079697,
+                  ]
+                },
+                {
+                  "distance": 41,
+                  "duration": 37,
+                  "vertexes": [
+                    129.06515984956937, 35.15448517079697,
+                    129.065219588, 35.152854756
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    };
+    
+    return jsonEncode(routeData);
+  }
+
+    /// 안심 도보 경로 정보를 반환하는 임시 함수 (하드코딩)
+  String getSafeWalkRoute({
+    required LatLng origin,
+    required LatLng destination,
+    List<LatLng>? waypoints,
+  }) {
+    // 하드코딩된 경로 정보 반환
+    final routeData = {
+      "trans_id": "01872ad0a5577deeadc7f87ba0ec2936",
+      "routes": [
+        {
+          "result_code": 0,
+          "result_message": "성공",
+          "summary": {
+            "distance": 1257,
+            "duration": 1203
+          },
+          "sections": [
+            {
+              "distance": 246,
+              "duration": 258,
+              "roads": [
+                {
+                  "distance": 22,
+                  "duration": 20,
+                  "vertexes": [
+                    129.059317193, 35.157759003,
+                    129.06512644062067, 35.157720909772266,
+                  ]
+                },
+                {
+                  "distance": 41,
+                  "duration": 37,
+                  "vertexes": [
+                    129.06512644062067, 35.157720909772266,
+                    129.065219588, 35.152854756
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    };
+    
+    return jsonEncode(routeData);
+  }
 
   void _selectDestination(BuildContext context) {
     // 목적지 선택 로직 구현
@@ -45,50 +151,7 @@ class _ServicePageState extends State<ServicePage> {
     );
   }
 
-  void _createRoutePolyline() async {
-    try {
-      // 지도가 준비되었는지 확인
-      if (!_isMapReady || _mapController == null) {
-        print('지도가 아직 준비되지 않았습니다.');
-        return;
-      }
-      
-      // 추가 대기 시간 (지도 완전 렌더링 대기)
-      await Future.delayed(const Duration(milliseconds: 500)); // 0.5초 대기
-      
-      // 서면역에서 전포역까지의 경로 좌표 배열
-      final List<LatLng> linePath = [
-        seomyeonStation, // 서면역
-        jeonpoStation,   // 전포역
-      ];
 
-      print('경로 좌표 배열 생성 완료: ${linePath.length}개 포인트');
-      print('서면역 좌표: ${seomyeonStation.latitude}, ${seomyeonStation.longitude}');
-      print('전포역 좌표: ${jeonpoStation.latitude}, ${jeonpoStation.longitude}');
-
-      // Polyline 생성
-      final polyline = Polyline(
-        polylineId: 'route_to_jeonpo',
-        points: linePath,
-        strokeColor: const Color(0xFFFFAE00), // 주황색 (#FFAE00)
-        strokeOpacity: 0.7, // 불투명도 0.7
-        strokeWidth: 5, // 선 두께 5
-        strokeStyle: StrokeStyle.solid, // 실선 스타일
-        zIndex: 1,
-      );
-      
-      // 지도에 polyline 추가
-      await _mapController!.addPolyline(polylines: [polyline]);
-      
-      // 상태 업데이트
-      setState(() {
-        routePolyline = polyline;
-      });
-    } catch (e) {
-      print('경로 선 생성 오류: $e');
-      print('오류 스택 트레이스: ${StackTrace.current}');
-    }
-  }
 
   void _handleDestinationSelection(BuildContext context) async {
     try {
@@ -98,24 +161,126 @@ class _ServicePageState extends State<ServicePage> {
         return;
       }
 
+      // 서면역 마커 생성
+      final origin_marker = Marker(
+        markerId: 'seomyeonStation',
+        latLng: seomyeonStation,
+      );
+
       // 전포역 마커 생성
-      final marker = Marker(
+      final destination_marker = Marker(
         markerId: 'jeonpoStation',
         latLng: jeonpoStation,
       );
-
-      print('마커 추가 시작...');
       
       // 마커 추가
-      await _mapController!.addMarker(markers: [marker]);
-      print('마커 추가 완료');
+      await _mapController!.addMarker(markers: [origin_marker, destination_marker]);
+
       
-      // 경로 선 생성
-      _createRoutePolyline();
+      // getWalkRoute 함수를 사용하여 경로 정보 가져오기
+      final routeJson = getWalkRoute(
+        origin: seomyeonStation,
+        destination: jeonpoStation,
+      );
+      
+      // print('경로 정보 JSON: $routeJson');
+      
+      // JSON 파싱하여 roads 정보 추출
+      final routeData = jsonDecode(routeJson);
+      final roads = routeData['routes'][0]['sections'][0]['roads'] as List;
+      
+      print('추출된 roads 개수: ${roads.length}');
+      
+      // 모든 polyline을 한 번에 생성
+      final List<Polyline> allPolylines = [];
+      
+      for (int i = 0; i < roads.length; i++) {
+        final road = roads[i];
+        final vertexes = road['vertexes'] as List;
+        
+        // vertexes는 [시작점_경도, 시작점_위도, 도착점_경도, 도착점_위도] 순서
+        if (vertexes.length >= 4) {
+          final startLng = vertexes[0] as double;
+          final startLat = vertexes[1] as double;
+          final endLng = vertexes[2] as double;
+          final endLat = vertexes[3] as double;
+          
+          print('Road $i: 시작점($startLat, $startLng) → 도착점($endLat, $endLng)');
+          
+          // Polyline 생성
+          final polyline = Polyline(
+            polylineId: 'route_segment_$i',
+            points: [
+              LatLng(startLat, startLng),
+              LatLng(endLat, endLng),
+            ],
+            strokeColor: Colors.blue, // 파란색 계열
+            strokeOpacity: 0.7,
+            strokeWidth: 5,
+            strokeStyle: StrokeStyle.solid,
+            zIndex: 1,
+          );
+          
+          allPolylines.add(polyline);
+          print('Road $i polyline 생성 완료');
+        }
+      }
+      
+      // getSafeWalkRoute 함수를 사용하여 안전 경로 정보 가져오기
+      final safeRouteJson = getSafeWalkRoute(
+        origin: seomyeonStation,
+        destination: jeonpoStation,
+      );
+      
+      // JSON 파싱하여 안전 경로의 roads 정보 추출
+      final safeRouteData = jsonDecode(safeRouteJson);
+      final safeRoads = safeRouteData['routes'][0]['sections'][0]['roads'] as List;
+      
+      print('추출된 안전 경로 roads 개수: ${safeRoads.length}');
+      
+      // 안전 경로의 모든 polyline을 생성하여 allPolylines에 추가
+      for (int i = 0; i < safeRoads.length; i++) {
+        final road = safeRoads[i];
+        final vertexes = road['vertexes'] as List;
+        
+        // vertexes는 [시작점_경도, 시작점_위도, 도착점_경도, 도착점_위도] 순서
+        if (vertexes.length >= 4) {
+          final startLng = vertexes[0] as double;
+          final startLat = vertexes[1] as double;
+          final endLng = vertexes[2] as double;
+          final endLat = vertexes[3] as double;
+          
+          print('안전 경로 Road $i: 시작점($startLat, $startLng) → 도착점($endLat, $endLng)');
+          
+          // 안전 경로용 Polyline 생성 (파란색 계열)
+          final safePolyline = Polyline(
+            polylineId: 'safe_route_segment_$i',
+            points: [
+              LatLng(startLat, startLng),
+              LatLng(endLat, endLng),
+            ],
+            strokeColor: Colors.orange, // 주황색
+            strokeOpacity: 0.8,
+            strokeWidth: 4,
+            strokeStyle: StrokeStyle.solid,
+            zIndex: 2, // 기존 경로보다 위에 표시
+          );
+          
+          allPolylines.add(safePolyline);
+          print('안전 경로 Road $i polyline 생성 완료');
+        }
+      }
+      
+      // 모든 polyline을 한 번에 지도에 추가 (기존 경로 + 안전 경로)
+      if (allPolylines.isNotEmpty) {
+        await _mapController!.addPolyline(polylines: allPolylines);
+        print('총 ${allPolylines.length}개의 polyline을 한 번에 추가 완료 (기존 경로 + 안전 경로)');
+      }
       
       // 상태 업데이트
       setState(() {
-        destinationMarker = marker;
+        destinationMarker = destination_marker;
+        originMarker = origin_marker;
       });
 
       // 지도 중심을 경로 중간 지점으로 이동하고 줌 레벨 조정
