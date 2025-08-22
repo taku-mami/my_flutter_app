@@ -401,136 +401,138 @@ class _ServicePageState extends State<ServicePage> {
 
                             ),
                             
-                            // 상단 출발지/도착지 입력 컴포넌트
-                            Positioned(
-                              top: 20.0,
-                              left: 35.0, // 좌우 여백을 조금 더 늘려서 너비를 아주 살짝 줄임
-                              right: 35.0, // 좌우 여백을 조금 더 늘려서 너비를 아주 살짝 줄임
-                              child: Container(
-                                padding: const EdgeInsets.all(12.0), // 패딩을 16에서 12로 줄임
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(10.0), // 모서리 반경도 살짝 줄임
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 6, // 그림자도 살짝 줄임
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Column(
-                                  children: [
-                                    // 출발지 입력 필드
-                                    SizedBox(
-                                      height: 40.0, // 높이를 절반으로 줄임 (기존 약 80에서 40으로)
-                                      child: TextField(
-                                        style: const TextStyle(color: Colors.black), // 입력 텍스트 색상을 검은색으로 설정
-                                        decoration: InputDecoration(
-                                          hintText: '출발지 입력',
-                                          prefixIcon: const Icon(Icons.location_on, color: Colors.green, size: 18), // 아이콘 크기도 줄임
-                                          filled: true,
-                                          fillColor: Colors.grey[50],
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8), // 내부 여백 줄임
-                                          border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(6.0), // 테두리 모서리 줄임
-                                            borderSide: BorderSide(color: Colors.grey[300]!),
-                                          ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(6.0),
-                                            borderSide: BorderSide(color: Colors.grey[300]!),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(6.0),
-                                            borderSide: const BorderSide(color: Colors.blue, width: 1.5), // 포커스 테두리도 줄임
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8.0), // 필드 간 간격도 줄임
-                                    // 도착지 입력 필드
-                                    SizedBox(
-                                      height: 40.0, // 높이를 절반으로 줄임
-                                      child: TextField(
-                                        style: const TextStyle(color: Colors.black), // 입력 텍스트 색상을 검은색으로 설정
-                                        decoration: InputDecoration(
-                                          hintText: '도착지 입력',
-                                          prefixIcon: const Icon(Icons.location_on, color: Colors.red, size: 18), // 아이콘 크기도 줄임
-                                          filled: true,
-                                          fillColor: Colors.grey[50],
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8), // 내부 여백 줄임
-                                          border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(6.0), // 테두리 모서리 줄임
-                                            borderSide: BorderSide(color: Colors.grey[300]!),
-                                          ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(6.0),
-                                            borderSide: BorderSide(color: Colors.grey[300]!),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(6.0),
-                                            borderSide: const BorderSide(color: Colors.blue, width: 1.5), // 포커스 테두리도 줄임
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            
-                            // 목적지 선택 버튼
-                            Positioned(
-                              left: 0,
-                              right: 0,
-                              bottom: MediaQuery.of(context).size.height * 0.05, // 하단에서 5% 위
-                              child: Center(
+                            // 상단 출발지/도착지 입력 컴포넌트 (지도가 준비되면 표시)
+                            if (_isMapReady)
+                              Positioned(
+                                top: 20.0,
+                                left: 35.0, // 좌우 여백을 조금 더 늘려서 너비를 아주 살짝 줄임
+                                right: 35.0, // 좌우 여백을 조금 더 늘려서 너비를 아주 살짝 줄임
                                 child: Container(
+                                  padding: const EdgeInsets.all(12.0), // 패딩을 16에서 12로 줄임
                                   decoration: BoxDecoration(
-                                    color: _isMapReady ? Colors.white : Colors.grey[300],
-                                    borderRadius: BorderRadius.circular(8),
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(10.0), // 모서리 반경도 살짝 줄임
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(_isMapReady ? 0.2 : 0.1),
-                                        blurRadius: 8,
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 6, // 그림자도 살짝 줄임
                                         offset: const Offset(0, 2),
                                       ),
                                     ],
                                   ),
-                                  child: Material(
-                                    color: Colors.transparent,
-                                                                    child: InkWell(
-                                    onTap: _isMapReady ? () {
-                                      _selectDestination(context);
-                                    } : null,
+                                  child: Column(
+                                    children: [
+                                      // 출발지 입력 필드
+                                      SizedBox(
+                                        height: 40.0, // 높이를 절반으로 줄임 (기존 약 80에서 40으로)
+                                        child: TextField(
+                                          style: const TextStyle(color: Colors.black), // 입력 텍스트 색상을 검은색으로 설정
+                                          decoration: InputDecoration(
+                                            hintText: '출발지 입력',
+                                            prefixIcon: const Icon(Icons.location_on, color: Colors.green, size: 18), // 아이콘 크기도 줄임
+                                            filled: true,
+                                            fillColor: Colors.grey[50],
+                                            contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8), // 내부 여백 줄임
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(6.0), // 테두리 모서리 줄임
+                                              borderSide: BorderSide(color: Colors.grey[300]!),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(6.0),
+                                              borderSide: BorderSide(color: Colors.grey[300]!),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(6.0),
+                                              borderSide: const BorderSide(color: Colors.blue, width: 1.5), // 포커스 테두리도 줄임
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8.0), // 필드 간 간격도 줄임
+                                      // 도착지 입력 필드
+                                      SizedBox(
+                                        height: 40.0, // 높이를 절반으로 줄임
+                                        child: TextField(
+                                          style: const TextStyle(color: Colors.black), // 입력 텍스트 색상을 검은색으로 설정
+                                          decoration: InputDecoration(
+                                            hintText: '도착지 입력',
+                                            prefixIcon: const Icon(Icons.location_on, color: Colors.red, size: 18), // 아이콘 크기도 줄임
+                                            filled: true,
+                                            fillColor: Colors.grey[50],
+                                            contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8), // 내부 여백 줄임
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(6.0), // 테두리 모서리 줄임
+                                              borderSide: BorderSide(color: Colors.grey[300]!),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(6.0),
+                                              borderSide: BorderSide(color: Colors.grey[300]!),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(6.0),
+                                              borderSide: const BorderSide(color: Colors.blue, width: 1.5), // 포커스 테두리도 줄임
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            
+                            // 목적지 선택 버튼 (지도가 준비되면 표시)
+                            if (_isMapReady)
+                              Positioned(
+                                left: 0,
+                                right: 0,
+                                bottom: MediaQuery.of(context).size.height * 0.05, // 하단에서 5% 위
+                                child: Center(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
                                       borderRadius: BorderRadius.circular(8),
-                                      child: const Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(
-                                              Icons.location_on,
-                                              color: Colors.blue,
-                                              size: 20,
-                                            ),
-                                            SizedBox(width: 8),
-                                            Text(
-                                              '목적지 선택',
-                                              style: TextStyle(
-                                                color: Colors.black87,
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 14,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.2),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        onTap: () {
+                                          _selectDestination(context);
+                                        },
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: const Padding(
+                                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.location_on,
+                                                color: Colors.blue,
+                                                size: 20,
                                               ),
-                                            ),
-                                          ],
+                                              SizedBox(width: 8),
+                                              Text(
+                                                '목적지 선택',
+                                                style: TextStyle(
+                                                  color: Colors.black87,
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
                           ],
                         ),
                     ),
