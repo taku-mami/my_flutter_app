@@ -150,12 +150,43 @@ class _ServicePageState extends State<ServicePage> {
   }
   
   void _selectDestination(BuildContext context) {
-    // 안전 경로 찾기 로직 구현
+    // 출발지와 도착지가 선택되어 있는지 확인
+    final originText = _originController.text.trim();
+    final destinationText = _destinationController.text.trim();
+    
+    if (originText.isEmpty || destinationText.isEmpty) {
+      // 출발지 또는 도착지가 선택되지 않은 경우
+      String missingField = '';
+      if (originText.isEmpty && destinationText.isEmpty) {
+        missingField = '출발지와 도착지';
+      } else if (originText.isEmpty) {
+        missingField = '출발지';
+      } else {
+        missingField = '도착지';
+      }
+      
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('입력 확인'),
+          content: Text('$missingField가 선택되어 있지 않습니다.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('확인'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+    
+    // 출발지와 도착지가 모두 선택된 경우에만 안전 경로 찾기 다이얼로그 표시
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('안전 경로 찾기'),
-        content: const Text('안전 경로를 찾으시겠습니까?'),
+        content: Text('출발지: $originText\n도착지: $destinationText\n\n안전 경로를 찾으시겠습니까?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -167,7 +198,7 @@ class _ServicePageState extends State<ServicePage> {
               // 안전 경로 찾기 처리
               _handleDestinationSelection(context);
             },
-            child: const Text('선택'),
+            child: const Text('찾기'),
           ),
         ],
       ),
@@ -184,16 +215,42 @@ class _ServicePageState extends State<ServicePage> {
         return;
       }
 
-      // 서면역 마커 생성
+      // 선택된 출발지와 도착지 텍스트 가져오기
+      final originText = _originController.text.trim();
+      final destinationText = _destinationController.text.trim();
+      
+      // locationData에서 선택된 위치의 좌표 찾기
+      LatLng? originLatLng;
+      LatLng? destinationLatLng;
+      
+      for (final location in locationData) {
+        if (location['localName'] == originText) {
+          final coords = location['coord'] as List;
+          originLatLng = LatLng(coords[1] as double, coords[0] as double);
+        }
+        if (location['localName'] == destinationText) {
+          final coords = location['coord'] as List;
+          destinationLatLng = LatLng(coords[1] as double, coords[0] as double);
+        }
+      }
+      
+      if (originLatLng == null || destinationLatLng == null) {
+        print('선택된 위치의 좌표를 찾을 수 없습니다.');
+        return;
+      }
+
+      // 출발지 마커 생성
       final origin_marker = Marker(
-        markerId: 'seomyeonStation',
-        latLng: seomyeonStation,
+        markerId: 'origin',
+        latLng: originLatLng,
+        infoWindowContent: '$originText (출발지)',
       );
 
-      // 전포역 마커 생성
+      // 도착지 마커 생성
       final destination_marker = Marker(
-        markerId: 'jeonpoStation',
-        latLng: jeonpoStation,
+        markerId: 'destination',
+        latLng: destinationLatLng,
+        infoWindowContent: '$destinationText (도착지)',
       );
       
       // getCameraCoord 함수를 사용하여 카메라 좌표 정보 가져오기
@@ -225,8 +282,8 @@ class _ServicePageState extends State<ServicePage> {
       
       // getWalkRoute 함수를 사용하여 경로 정보 가져오기
       final routeJson = getWalkRoute(
-        origin: seomyeonStation,
-        destination: jeonpoStation,
+        origin: originLatLng,
+        destination: destinationLatLng,
       );
       
       // print('경로 정보 JSON: $routeJson');
@@ -274,8 +331,8 @@ class _ServicePageState extends State<ServicePage> {
       
       // getSafeWalkRoute 함수를 사용하여 안전 경로 정보 가져오기
       final safeRouteJson = getSafeWalkRoute(
-        origin: seomyeonStation,
-        destination: jeonpoStation,
+        origin: originLatLng,
+        destination: destinationLatLng,
       );
       
       // JSON 파싱하여 안전 경로의 roads 정보 추출
@@ -329,16 +386,16 @@ class _ServicePageState extends State<ServicePage> {
         originMarker = origin_marker;
       });
 
-      // 지도 중심을 경로 중간 지점으로 이동하고 줌 레벨 조정
-      final centerLat = (seomyeonStation.latitude + jeonpoStation.latitude) / 2;
-      final centerLng = (seomyeonStation.longitude + jeonpoStation.longitude) / 2;
+      // 지도 중심을 출발지와 도착지의 중간 지점으로 이동하고 줌 레벨 조정
+      final centerLat = (originLatLng.latitude + destinationLatLng.latitude) / 2;
+      final centerLng = (originLatLng.longitude + destinationLatLng.longitude) / 2;
       final centerPoint = LatLng(centerLat, centerLng);
       
       _mapController!.setCenter(centerPoint);
       _mapController!.setLevel(4); // 경로를 잘 볼 수 있도록 줌 레벨 조정
       print('지도 중심 이동 및 줌 레벨 조정 완료');
       
-      print('전포역 마커 및 경로 생성됨');
+      print('$originText에서 $destinationText까지의 경로 생성됨');
 
       // 컴포넌트 가시성 제어
       _isUIVisible = false;
@@ -388,7 +445,7 @@ class _ServicePageState extends State<ServicePage> {
             padding: const EdgeInsets.all(0.0),
             child: Column(
               children: [                
-                // 카카오 지도
+                                // 카카오 지도
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
@@ -400,117 +457,108 @@ class _ServicePageState extends State<ServicePage> {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(16),
-                                              child: Stack(
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _isUIVisible = !_isUIVisible;
-                                });
-                                print('지도 터치: UI 가시성 = $_isUIVisible');
-                              },
-                              child: KakaoMap(
-                                onMapCreated: (KakaoMapController controller) async {
-                                  setState(() {
-                                    _mapController = controller;
-                                  });
-                                  print('카카오 지도가 생성되었습니다.');
-                                  
-                                  // 지도 초기화 완료를 기다림
-                                  await Future.delayed(const Duration(milliseconds: 1000));
-                                  setState(() {
-                                    _isMapReady = true;
-                                  });
-                                  print('지도 초기화 완료');
-                                },
-                                center: LatLng(35.1691716212143, 129.13625616255), // 벡스코 좌표
-                                currentLevel: 5, // 지도의 확대 레벨
-                                zoomControl: true, // 확대 축소 버튼 표시
-                              ),
-                            ),
-                            
-                                                        // 상단 출발지/도착지 입력 컴포넌트 (지도가 준비되고 UI가 보일 때만 표시)
-                            if (_isMapReady && _isUIVisible)
-                              Positioned(
-                                top: 20.0,
-                                left: 35.0, // 좌우 여백을 조금 더 늘려서 너비를 아주 살짝 줄임
-                                right: 35.0, // 좌우 여백을 조금 더 늘려서 너비를 아주 살짝 줄임
-                                child: Container(
-                                  padding: const EdgeInsets.all(12.0), // 패딩을 16에서 12로 줄임
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(10.0), // 모서리 반경도 살짝 줄임
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
-                                        blurRadius: 6, // 그림자도 살짝 줄임
-                                        offset: const Offset(0, 2),
+                      child: Stack(
+                        children: [
+                          KakaoMap(
+                            onMapCreated: (KakaoMapController controller) async {
+                              setState(() {
+                                _mapController = controller;
+                              });
+                              print('카카오 지도가 생성되었습니다.');
+                              
+                              // 지도 초기화 완료를 기다림
+                              await Future.delayed(const Duration(milliseconds: 1000));
+                              setState(() {
+                                _isMapReady = true;
+                              });
+                              print('지도 초기화 완료');
+                            },
+                            center: LatLng(35.1691716212143, 129.13625616255), // 벡스코 좌표
+                            currentLevel: 5, // 지도의 확대 레벨
+                            zoomControl: true, // 확대 축소 버튼 표시
+                          ),
+                          // 상단 출발지/도착지 입력 컴포넌트 (지도가 준비되고 UI가 보일 때만 표시)
+                          if (_isMapReady && _isUIVisible)
+                            Positioned(
+                              top: 20.0,
+                              left: 35.0, // 좌우 여백을 조금 더 늘려서 너비를 아주 살짝 줄임
+                              right: 35.0, // 좌우 여백을 조금 더 늘려서 너비를 아주 살짝 줄임
+                              child: Container(
+                                padding: const EdgeInsets.all(12.0), // 패딩을 16에서 12로 줄임
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10.0), // 모서리 반경도 살짝 줄임
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 6, // 그림자도 살짝 줄임
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  children: [
+                                    // 출발지 입력 필드
+                                    SizedBox(
+                                      height: 40.0, // 높이를 절반으로 줄임 (기존 약 80에서 40으로)
+                                      child: TextField(
+                                        controller: _originController,
+                                        style: const TextStyle(color: Colors.black), // 입력 텍스트 색상을 검은색으로 설정
+                                        onChanged: _filterOriginLocations,
+                                        decoration: InputDecoration(
+                                          hintText: '출발지 입력',
+                                          prefixIcon: const Icon(Icons.location_on, color: Colors.green, size: 18), // 아이콘 크기도 줄임
+                                          filled: true,
+                                          fillColor: Colors.grey[50],
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8), // 내부 여백 줄임
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(6.0), // 테두리 모서리 줄임
+                                            borderSide: BorderSide(color: Colors.grey[300]!),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(6.0),
+                                            borderSide: BorderSide(color: Colors.grey[300]!),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(6.0),
+                                            borderSide: const BorderSide(color: Colors.blue, width: 1.5), // 포커스 테두리도 줄임
+                                          ),
+                                        ),
                                       ),
-                                    ],
-                                  ),
-                                  child: Column(
-                                    children: [
-                                                                             // 출발지 입력 필드
-                                       SizedBox(
-                                         height: 40.0, // 높이를 절반으로 줄임 (기존 약 80에서 40으로)
-                                         child: TextField(
-                                           controller: _originController,
-                                           style: const TextStyle(color: Colors.black), // 입력 텍스트 색상을 검은색으로 설정
-                                           onChanged: _filterOriginLocations,
-                                           decoration: InputDecoration(
-                                             hintText: '출발지 입력',
-                                             prefixIcon: const Icon(Icons.location_on, color: Colors.green, size: 18), // 아이콘 크기도 줄임
-                                             filled: true,
-                                             fillColor: Colors.grey[50],
-                                             contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8), // 내부 여백 줄임
-                                             border: OutlineInputBorder(
-                                               borderRadius: BorderRadius.circular(6.0), // 테두리 모서리 줄임
-                                               borderSide: BorderSide(color: Colors.grey[300]!),
-                                             ),
-                                             enabledBorder: OutlineInputBorder(
-                                               borderRadius: BorderRadius.circular(6.0),
-                                               borderSide: BorderSide(color: Colors.grey[300]!),
-                                             ),
-                                             focusedBorder: OutlineInputBorder(
-                                               borderRadius: BorderRadius.circular(6.0),
-                                               borderSide: const BorderSide(color: Colors.blue, width: 1.5), // 포커스 테두리도 줄임
-                                             ),
-                                           ),
-                                         ),
-                                       ),
-                                      const SizedBox(height: 8.0), // 필드 간 간격도 줄임
-                                                                             // 도착지 입력 필드
-                                       SizedBox(
-                                         height: 40.0, // 높이를 절반으로 줄임
-                                         child: TextField(
-                                           controller: _destinationController,
-                                           style: const TextStyle(color: Colors.black), // 입력 텍스트 색상을 검은색으로 설정
-                                           onChanged: _filterDestinationLocations,
-                                           decoration: InputDecoration(
-                                             hintText: '도착지 입력',
-                                             prefixIcon: const Icon(Icons.location_on, color: Colors.red, size: 18), // 아이콘 크기도 줄임
-                                             filled: true,
-                                             fillColor: Colors.grey[50],
-                                             contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8), // 내부 여백 줄임
-                                             border: OutlineInputBorder(
-                                               borderRadius: BorderRadius.circular(6.0), // 테두리 모서리 줄임
-                                               borderSide: BorderSide(color: Colors.grey[300]!),
-                                             ),
-                                             enabledBorder: OutlineInputBorder(
-                                               borderRadius: BorderRadius.circular(6.0),
-                                               borderSide: BorderSide(color: Colors.grey[300]!),
-                                             ),
-                                             focusedBorder: OutlineInputBorder(
-                                               borderRadius: BorderRadius.circular(6.0),
-                                               borderSide: const BorderSide(color: Colors.blue, width: 1.5), // 포커스 테두리도 줄임
-                                             ),
-                                           ),
-                                         ),
-                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                    const SizedBox(height: 8.0), // 필드 간 간격도 줄임
+                                    // 도착지 입력 필드
+                                    SizedBox(
+                                      height: 40.0, // 높이를 절반으로 줄임
+                                      child: TextField(
+                                        controller: _destinationController,
+                                        style: const TextStyle(color: Colors.black), // 입력 텍스트 색상을 검은색으로 설정
+                                        onChanged: _filterDestinationLocations,
+                                        decoration: InputDecoration(
+                                          hintText: '도착지 입력',
+                                          prefixIcon: const Icon(Icons.location_on, color: Colors.red, size: 18), // 아이콘 크기도 줄임
+                                          filled: true,
+                                          fillColor: Colors.grey[50],
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8), // 내부 여백 줄임
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(6.0), // 테두리 모서리 줄임
+                                            borderSide: BorderSide(color: Colors.grey[300]!),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(6.0),
+                                            borderSide: BorderSide(color: Colors.grey[300]!),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(6.0),
+                                            borderSide: const BorderSide(color: Colors.blue, width: 1.5), // 포커스 테두리도 줄임
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
+                            ),
                             // 출발지 후보 리스트 (입력 컴포넌트 위에 덮어씌워짐)
                             if (_isMapReady && _isUIVisible)
                               Positioned(
@@ -657,8 +705,8 @@ class _ServicePageState extends State<ServicePage> {
                                   ),
                                 ),
                               ),
-                          ],
-                        ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
