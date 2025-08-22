@@ -78,7 +78,7 @@ class _ServicePageState extends State<ServicePage> {
     return jsonEncode(routeData);
   }
 
-    /// 안심 도보 경로 정보를 반환하는 임시 함수 (하드코딩)
+  /// 안심 도보 경로 정보를 반환하는 임시 함수 (하드코딩)
   String getSafeWalkRoute({
     required LatLng origin,
     required LatLng destination,
@@ -123,9 +123,21 @@ class _ServicePageState extends State<ServicePage> {
       ]
     };
     
-    return jsonEncode(routeData);
+        return jsonEncode(routeData);
   }
-
+  
+  /// 카메라 좌표 정보를 반환하는 임시 함수 (하드코딩)
+  String getCameraCoord() {
+    // 하드코딩된 카메라 좌표 정보 반환
+    final cameraData = {
+      "coords": [
+        [129.06259149197297, 35.15497591543021]
+      ]
+    };
+    
+    return jsonEncode(cameraData);
+  }
+  
   void _selectDestination(BuildContext context) {
     // 목적지 선택 로직 구현
     showDialog(
@@ -173,8 +185,31 @@ class _ServicePageState extends State<ServicePage> {
         latLng: jeonpoStation,
       );
       
-      // 마커 추가
-      await _mapController!.addMarker(markers: [origin_marker, destination_marker]);
+      // getCameraCoord 함수를 사용하여 카메라 좌표 정보 가져오기
+      final cameraJson = getCameraCoord();
+      final cameraData = jsonDecode(cameraJson);
+      final cameraCoords = cameraData['coords'] as List;
+      
+      // 카메라 좌표에 마커 추가
+      final List<Marker> cameraMarkers = [];
+      for (int i = 0; i < cameraCoords.length; i++) {
+        final coord = cameraCoords[i] as List;
+        final lng = coord[0] as double;
+        final lat = coord[1] as double;
+        
+        final cameraMarker = Marker(
+          markerId: 'camera_$i',
+          latLng: LatLng(lat, lng),
+          infoWindowContent: '카메라 위치 $i',
+        );
+        cameraMarkers.add(cameraMarker);
+        print('카메라 마커 $i 생성: ($lat, $lng)');
+      }
+      
+      // 모든 마커를 한 번에 추가 (출발지, 도착지, 카메라 위치)
+      final allMarkers = [origin_marker, destination_marker, ...cameraMarkers];
+      await _mapController!.addMarker(markers: allMarkers);
+      print('총 ${allMarkers.length}개의 마커 추가 완료 (출발지, 도착지, 카메라 위치)');
 
       
       // getWalkRoute 함수를 사용하여 경로 정보 가져오기
@@ -344,82 +379,160 @@ class _ServicePageState extends State<ServicePage> {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(16),
-                      child: Stack(
-                        children: [
-                          KakaoMap(
-                            onMapCreated: (KakaoMapController controller) async {
-                              setState(() {
-                                _mapController = controller;
-                              });
-                              print('카카오 지도가 생성되었습니다.');
-                              
-                              // 지도 초기화 완료를 기다림
-                              await Future.delayed(const Duration(milliseconds: 1000));
-                              setState(() {
-                                _isMapReady = true;
-                              });
-                              print('지도 초기화 완료');
-                            },
-                            center: LatLng(35.157759003, 129.059317193), // 서면역 좌표
-                            currentLevel: 5, // 지도의 확대 레벨
-                            zoomControl: true, // 확대 축소 버튼 표시
+                                              child: Stack(
+                          children: [
+                            KakaoMap(
+                              onMapCreated: (KakaoMapController controller) async {
+                                setState(() {
+                                  _mapController = controller;
+                                });
+                                print('카카오 지도가 생성되었습니다.');
+                                
+                                // 지도 초기화 완료를 기다림
+                                await Future.delayed(const Duration(milliseconds: 1000));
+                                setState(() {
+                                  _isMapReady = true;
+                                });
+                                print('지도 초기화 완료');
+                              },
+                              center: LatLng(35.157759003, 129.059317193), // 서면역 좌표
+                              currentLevel: 5, // 지도의 확대 레벨
+                              zoomControl: true, // 확대 축소 버튼 표시
 
-                          ),
-                          
-                          // 목적지 선택 버튼
-                          Positioned(
-                            left: 0,
-                            right: 0,
-                            bottom: MediaQuery.of(context).size.height * 0.05, // 하단에서 5% 위
-                            child: Center(
+                            ),
+                            
+                            // 상단 출발지/도착지 입력 컴포넌트
+                            Positioned(
+                              top: 20.0,
+                              left: 35.0, // 좌우 여백을 조금 더 늘려서 너비를 아주 살짝 줄임
+                              right: 35.0, // 좌우 여백을 조금 더 늘려서 너비를 아주 살짝 줄임
                               child: Container(
+                                padding: const EdgeInsets.all(12.0), // 패딩을 16에서 12로 줄임
                                 decoration: BoxDecoration(
-                                  color: _isMapReady ? Colors.white : Colors.grey[300],
-                                  borderRadius: BorderRadius.circular(8),
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10.0), // 모서리 반경도 살짝 줄임
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(_isMapReady ? 0.2 : 0.1),
-                                      blurRadius: 8,
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 6, // 그림자도 살짝 줄임
                                       offset: const Offset(0, 2),
                                     ),
                                   ],
                                 ),
-                                child: Material(
-                                  color: Colors.transparent,
-                                                                  child: InkWell(
-                                  onTap: _isMapReady ? () {
-                                    _selectDestination(context);
-                                  } : null,
+                                child: Column(
+                                  children: [
+                                    // 출발지 입력 필드
+                                    SizedBox(
+                                      height: 40.0, // 높이를 절반으로 줄임 (기존 약 80에서 40으로)
+                                      child: TextField(
+                                        style: const TextStyle(color: Colors.black), // 입력 텍스트 색상을 검은색으로 설정
+                                        decoration: InputDecoration(
+                                          hintText: '출발지 입력',
+                                          prefixIcon: const Icon(Icons.location_on, color: Colors.green, size: 18), // 아이콘 크기도 줄임
+                                          filled: true,
+                                          fillColor: Colors.grey[50],
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8), // 내부 여백 줄임
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(6.0), // 테두리 모서리 줄임
+                                            borderSide: BorderSide(color: Colors.grey[300]!),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(6.0),
+                                            borderSide: BorderSide(color: Colors.grey[300]!),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(6.0),
+                                            borderSide: const BorderSide(color: Colors.blue, width: 1.5), // 포커스 테두리도 줄임
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8.0), // 필드 간 간격도 줄임
+                                    // 도착지 입력 필드
+                                    SizedBox(
+                                      height: 40.0, // 높이를 절반으로 줄임
+                                      child: TextField(
+                                        style: const TextStyle(color: Colors.black), // 입력 텍스트 색상을 검은색으로 설정
+                                        decoration: InputDecoration(
+                                          hintText: '도착지 입력',
+                                          prefixIcon: const Icon(Icons.location_on, color: Colors.red, size: 18), // 아이콘 크기도 줄임
+                                          filled: true,
+                                          fillColor: Colors.grey[50],
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8), // 내부 여백 줄임
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(6.0), // 테두리 모서리 줄임
+                                            borderSide: BorderSide(color: Colors.grey[300]!),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(6.0),
+                                            borderSide: BorderSide(color: Colors.grey[300]!),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(6.0),
+                                            borderSide: const BorderSide(color: Colors.blue, width: 1.5), // 포커스 테두리도 줄임
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            
+                            // 목적지 선택 버튼
+                            Positioned(
+                              left: 0,
+                              right: 0,
+                              bottom: MediaQuery.of(context).size.height * 0.05, // 하단에서 5% 위
+                              child: Center(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: _isMapReady ? Colors.white : Colors.grey[300],
                                     borderRadius: BorderRadius.circular(8),
-                                    child: const Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.location_on,
-                                            color: Colors.blue,
-                                            size: 20,
-                                          ),
-                                          SizedBox(width: 8),
-                                          Text(
-                                            '목적지 선택',
-                                            style: TextStyle(
-                                              color: Colors.black87,
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 14,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(_isMapReady ? 0.2 : 0.1),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                                                    child: InkWell(
+                                    onTap: _isMapReady ? () {
+                                      _selectDestination(context);
+                                    } : null,
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: const Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.location_on,
+                                              color: Colors.blue,
+                                              size: 20,
                                             ),
-                                          ),
-                                        ],
+                                            SizedBox(width: 8),
+                                            Text(
+                                              '목적지 선택',
+                                              style: TextStyle(
+                                                color: Colors.black87,
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
                     ),
                   ),
                 ),
