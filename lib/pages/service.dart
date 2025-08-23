@@ -57,6 +57,60 @@ class _ServicePageState extends State<ServicePage> {
     return jsonEncode(routeData);
   }
 
+  /// 경로의 중간 좌표를 구하는 함수
+  /// [routeJson]: getWalkRoute 함수의 반환값 (JSON 문자열)
+  /// 반환값: 경로의 중간 지점 좌표 (LatLng)
+  LatLng getRouteMidpoint(String routeJson) {
+    try {
+      // JSON 파싱
+      final Map<String, dynamic> routeData = jsonDecode(routeJson);
+      
+      // routes > sections > roads 배열 추출
+      final List<dynamic> routes = routeData['routes'] ?? [];
+      if (routes.isEmpty) {
+        throw Exception('경로 데이터가 없습니다.');
+      }
+      
+      final List<dynamic> sections = routes[0]['sections'] ?? [];
+      if (sections.isEmpty) {
+        throw Exception('섹션 데이터가 없습니다.');
+      }
+      
+      final List<dynamic> roads = sections[0]['roads'] ?? [];
+      if (roads.isEmpty) {
+        throw Exception('도로 데이터가 없습니다.');
+      }
+      
+      // 중간 인덱스 찾기
+      final int middleIndex = roads.length ~/ 2;
+      
+      // 중간 인덱스의 road 가져오기
+      final Map<String, dynamic> middleRoad = roads[middleIndex];
+      final List<dynamic> vertexes = middleRoad['vertexes'] ?? [];
+      
+      if (vertexes.length < 4) {
+        throw Exception('Vertexes 데이터가 부족합니다.');
+      }
+      
+      // vertexes는 [경도1, 위도1, 경도2, 위도2] 형태
+      final double startLng = vertexes[0].toDouble();
+      final double startLat = vertexes[1].toDouble();
+      final double endLng = vertexes[2].toDouble();
+      final double endLat = vertexes[3].toDouble();
+      
+      // 중간점 계산
+      final double midLat = (startLat + endLat) / 2;
+      final double midLng = (startLng + endLng) / 2;
+      
+      return LatLng(midLat, midLng);
+      
+    } catch (e) {
+      print('경로 중간점 계산 오류: $e');
+      // 기본값 반환 (부산 해운대 근처)
+      return LatLng(35.1456, 129.0174);
+    }
+  }
+
   /// 안심 도보 경로 정보를 반환하는 임시 함수 (하드코딩)
   String getSafeWalkRoute({
     required LatLng origin,
@@ -174,7 +228,10 @@ class _ServicePageState extends State<ServicePage> {
     // 하드코딩된 편의점 좌표 정보 반환
     final convenienceStoreData = {
       "coords": [
-        [129.01633487113457, 35.14461098099456] // 이마트24 개금대명점
+        [129.01633487113457, 35.14461098099456], // 이마트24 개금대명점
+        [129.019653885683, 35.1455505790497], // GS25 개금백병원점
+        [129.019975472397, 35.1463544682347], // CU 개금백병원점
+        [129.016149185872, 35.1477573596868], // GS25 주례파크점
       ]
     };
     
@@ -327,8 +384,8 @@ class _ServicePageState extends State<ServicePage> {
           markerId: 'security_light_$i',
           latLng: LatLng(lat, lng),
           infoWindowContent: '보안등 위치 $i',
-          width: 40,
-          height: 40,
+          width: 30,
+          height: 30,
         );
         securityLightMarkers.add(securityLightMarker);
         print('보안등 마커 $i 생성: ($lat, $lng)');
@@ -405,7 +462,7 @@ class _ServicePageState extends State<ServicePage> {
         }
       }
       
-      // 모든 마커를 한 번에 추가 (출발지, 도착지, 카메라, 편의점)
+      // 모든 마커를 한 번에 추가 (출발지, 도착지, 카메라, 보안등, 편의점)
       final allMarkers = [origin_marker, destination_marker, ...cameraMarkers, ...securityLightMarkers, ...convenienceStoreMarkers];
       await _mapController!.addMarker(markers: allMarkers);
       print('총 ${allMarkers.length}개의 마커 추가 완료 (출발지, 도착지, 카메라, 보안등, 편의점)');
@@ -419,8 +476,23 @@ class _ServicePageState extends State<ServicePage> {
       
       // print('경로 정보 JSON: $routeJson');
       
-      // JSON 파싱하여 roads 정보 추출
+      // JSON 파싱하여 최단 경로 정보 추출
       final routeData = jsonDecode(routeJson);
+      
+      // 최단 경로의 중간 지점 좌표 추출
+      final routeMidpoint = getRouteMidpoint(routeJson);
+      
+      // 경로의 중간 지점에 '경로설명' CustomOverlay 생성
+      final routeInfoOverlay = CustomOverlay(
+        customOverlayId: 'route_info_overlay',
+        latLng: routeMidpoint,
+        content: '<div style="background-color: #999999; color: white; padding: 8px 12px; border-radius: 10px; font-family: Arial, sans-serif; font-size: 11px; font-weight: bold; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.3); position: relative; white-space: nowrap;">최단 경로<br>20분<div style="position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #999999;"></div></div>',
+        xAnchor: 0.5,
+        yAnchor: 1.2, // 말풍선이 좌표점 아래에 위치하도록 조정
+        zIndex: 5,
+      );
+      
+      // 최단 경로의 모든 polyline을 생성하여 allPolylines에 추가
       final roads = routeData['routes'][0]['sections'][0]['roads'] as List;
       
       print('추출된 roads 개수: ${roads.length}');
@@ -468,6 +540,25 @@ class _ServicePageState extends State<ServicePage> {
       
       // JSON 파싱하여 안전 경로의 roads 정보 추출
       final safeRouteData = jsonDecode(safeRouteJson);
+
+      // 안전 경로의 중간 지점 좌표 추출
+      final safeRouteMidpoint = getRouteMidpoint(safeRouteJson);
+
+      // 안전 경로의 중간 지점에 '안전 경로설명' CustomOverlay 생성 
+      final safeRouteInfoOverlay = CustomOverlay(
+        customOverlayId: 'safe_route_info_overlay',
+        latLng: safeRouteMidpoint,
+        content: '<div style="background-color: #4CAF50; color: white; padding: 8px 12px; border-radius: 10px; font-family: Arial, sans-serif; font-size: 11px; font-weight: bold; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.3); position: relative; white-space: nowrap;">안전 경로<br>20분<div style="position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #4CAF50;"></div></div>',
+        xAnchor: 0.5,
+        yAnchor: 1.2, // 말풍선이 좌표점 아래에 위치하도록 조정
+        zIndex: 5,
+      );
+      
+      // CustomOverlay를 한 번에 추가
+      await _mapController!.addCustomOverlay(customOverlays: [routeInfoOverlay, safeRouteInfoOverlay]);
+      print('안전 경로설명 CustomOverlay 추가 완료: 중간 지점(${safeRouteMidpoint.latitude}, ${safeRouteMidpoint.longitude})');
+
+
       final safeRoads = safeRouteData['routes'][0]['sections'][0]['roads'] as List;
       
       print('추출된 안전 경로 roads 개수: ${safeRoads.length}');
