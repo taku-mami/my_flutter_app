@@ -63,46 +63,10 @@ class _ServicePageState extends State<ServicePage> {
     required LatLng destination,
     List<LatLng>? waypoints,
   }) {
-    // 하드코딩된 경로 정보 반환
-    final routeData = {
-      "trans_id": "01872ad0a5577deeadc7f87ba0ec2936",
-      "routes": [
-        {
-          "result_code": 0,
-          "result_message": "성공",
-          "summary": {
-            "distance": 1257,
-            "duration": 1203
-          },
-          "sections": [
-            {
-              "distance": 246,
-              "duration": 258,
-              "roads": [
-                {
-                  "distance": 22,
-                  "duration": 20,
-                  "vertexes": [
-                    129.014987697039,35.1460392279298,
-                    129.01900153422724, 35.143859141427654,
-                  ]
-                },
-                {
-                  "distance": 41,
-                  "duration": 37,
-                  "vertexes": [
-                    129.01900153422724, 35.143859141427654,
-                    129.02072861028753,35.14357891484248
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    };
+    // 업데이트된 안전 경로 정보
+    final safeRouteData = {"trans_id":"01872ad0a5577deeadc7f87ba0ec2936","routes":[{"result_code":0,"result_message":"성공","summary":{"distance":1257,"duration":1203},"sections":[{"distance":246,"duration":258,"roads":[{"distance":22,"duration":20,"vertexes":[129.014987697039,35.1460392279298,129.015159266,35.146291591]},{"distance":15,"duration":12,"vertexes":[129.015159266,35.146291591,129.015402804,35.146460816]},{"distance":18,"duration":15,"vertexes":[129.015402804,35.146460816,129.015532243,35.146279452]},{"distance":20,"duration":18,"vertexes":[129.015532243,35.146279452,129.015683628,35.146097903]},{"distance":14,"duration":12,"vertexes":[129.015683628,35.146097903,129.015781043,35.145988919]},{"distance":16,"duration":14,"vertexes":[129.015781043,35.145988919,129.015856063,35.145844066]},{"distance":8,"duration":7,"vertexes":[129.015856063,35.145844066,129.015899955,35.145843698]},{"distance":28,"duration":25,"vertexes":[129.015899955,35.145843698,129.016175740,35.145958567]},{"distance":7,"duration":6,"vertexes":[129.016175740,35.145958567,129.016241579,35.145958015]},{"distance":5,"duration":4,"vertexes":[129.016241579,35.145958015,129.016251880,35.145903845]},{"distance":12,"duration":10,"vertexes":[129.016251880,35.145903845,129.016217840,35.145813991]},{"distance":8,"duration":7,"vertexes":[129.016217840,35.145813991,129.016195333,35.145769110]},{"distance":25,"duration":22,"vertexes":[129.016195333,35.145769110,129.016402814,35.145686243]},{"distance":12,"duration":10,"vertexes":[129.016402814,35.145686243,129.016523518,35.145685231]},{"distance":32,"duration":28,"vertexes":[129.016523518,35.145685231,129.016454205,35.145406379]},{"distance":30,"duration":26,"vertexes":[129.016454205,35.145406379,129.016749918,35.145358828]},{"distance":52,"duration":45,"vertexes":[129.016749918,35.145358828,129.017275840,35.145291316]},{"distance":3,"duration":3,"vertexes":[129.017275840,35.145291316,129.017264306,35.145246343]},{"distance":15,"duration":13,"vertexes":[129.017264306,35.145246343,129.017251875,35.145129266]},{"distance":48,"duration":42,"vertexes":[129.017251875,35.145129266,129.017180654,35.144697192]},{"distance":14,"duration":12,"vertexes":[129.017180654,35.144697192,129.017168111,35.144571102]},{"distance":44,"duration":38,"vertexes":[129.017168111,35.144571102,129.017108312,35.144174989]},{"distance":4,"duration":3,"vertexes":[129.017108312,35.144174989,129.017107864,35.144138937]},{"distance":28,"duration":24,"vertexes":[129.017107864,35.144138937,129.017381850,35.144109594]},{"distance":40,"duration":35,"vertexes":[129.017381850,35.144109594,129.017776200,35.144052199]},{"distance":20,"duration":17,"vertexes":[129.017776200,35.144052199,129.017973263,35.144014488]},{"distance":10,"duration":8,"vertexes":[129.017973263,35.144014488,129.018049625,35.143977790]},{"distance":2,"duration":2,"vertexes":[129.018049625,35.143977790,129.018049512,35.143968777]},{"distance":12,"duration":10,"vertexes":[129.018049512,35.143968777,129.018026444,35.143878831]},{"distance":42,"duration":36,"vertexes":[129.018026444,35.143878831,129.017922527,35.143465061]},{"distance":2,"duration":2,"vertexes":[129.017922527,35.143465061,129.017922414,35.143456048]},{"distance":2,"duration":2,"vertexes":[129.017922414,35.143456048,129.017922527,35.143465061]},{"distance":31,"duration":27,"vertexes":[129.017922527,35.143465061,129.018229204,35.143417414]},{"distance":33,"duration":29,"vertexes":[129.018229204,35.143417414,129.018557826,35.143369583]},{"distance":35,"duration":31,"vertexes":[129.018557826,35.143369583,129.018908394,35.143321566]},{"distance":6,"duration":5,"vertexes":[129.018908394,35.143321566,129.018941761,35.143357341]},{"distance":8,"duration":7,"vertexes":[129.018941761,35.143357341,129.019007486,35.143347774]},{"distance":28,"duration":24,"vertexes":[129.019007486,35.143347774,129.019282817,35.143426584]},{"distance":54,"duration":47,"vertexes":[129.019282817,35.143426584,129.019822395,35.143575282]},{"distance":30,"duration":26,"vertexes":[129.019822395,35.143575282,129.020119448,35.143635880]},{"distance":7,"duration":6,"vertexes":[129.020119448,35.143635880,129.020185285,35.143635325]},{"distance":6,"duration":5,"vertexes":[129.020185285,35.143635325,129.020218766,35.143680113]},{"distance":3,"duration":3,"vertexes":[129.020218766,35.143680113,129.020230188,35.143716073]},{"distance":18,"duration":15,"vertexes":[129.020230188,35.143716073,129.020372048,35.143651781]},{"distance":20,"duration":17,"vertexes":[129.020372048,35.143651781,129.020535852,35.143587304]},{"distance":41,"duration":37,"vertexes":[129.020535852,35.143587304,129.02072861028753,35.14357891484248]}]}]}]};
     
-        return jsonEncode(routeData);
+        return jsonEncode(safeRouteData);
   }
   
   /// 출발지 검색 필터링
@@ -142,11 +106,33 @@ class _ServicePageState extends State<ServicePage> {
     // 하드코딩된 카메라 좌표 정보 반환
     final cameraData = {
       "coords": [
-        [129.01900153422724, 35.143859141427654]
+        [129.019624, 35.143295],
+        [129.019334, 35.143462],
+        [129.017890, 35.143496],
+        [129.018024, 35.143984],
+        [129.017161, 35.144179],
+        [129.020342, 35.144189],
+        [129.017239, 35.144674],
+        [129.017273, 35.145267],
+        [129.016452, 35.145435],
+        [129.015890, 35.145850],
+        [129.015462, 35.146440]
       ]
     };
     
     return jsonEncode(cameraData);
+  }
+
+  /// 보안등 좌표 정보를 반환하는 임시 함수 (하드코딩)
+  String getSecurityLightCoord() {
+    // 하드코딩된 보안등 좌표 정보 반환
+    final securityLightData = {
+      "coords": [
+        [129.01728406367073, 35.14528457312579]
+      ]
+    };
+    
+    return jsonEncode(securityLightData);
   }
 
   /// 경찰서 좌표 정보를 반환하는 임시 함수 (하드코딩)
@@ -171,18 +157,6 @@ class _ServicePageState extends State<ServicePage> {
     };
     
     return jsonEncode(convenienceStoreData);
-  }
-
-  /// 보안등 좌표 정보를 반환하는 임시 함수 (하드코딩)
-  String getSecurityLightCoord() {
-    // 하드코딩된 보안등 좌표 정보 반환
-    final securityLightData = {
-      "coords": [
-        [129.01894263047237, 35.14336222582966]
-      ]
-    };
-    
-    return jsonEncode(securityLightData);
   }
 
   void _selectDestination(BuildContext context) {
@@ -308,9 +282,34 @@ class _ServicePageState extends State<ServicePage> {
           markerId: 'camera_$i',
           latLng: LatLng(lat, lng),
           infoWindowContent: '카메라 위치 $i',
+          width: 40,
+          height: 40,
         );
         cameraMarkers.add(cameraMarker);
         print('카메라 마커 $i 생성: ($lat, $lng)');
+      }
+
+      // 보안등 좌표 정보를 반환하는 임시 함수 (하드코딩)
+      final securityLightJson = getSecurityLightCoord();
+      final securityLightData = jsonDecode(securityLightJson);
+      final securityLightCoords = securityLightData['coords'] as List;
+
+      // 보안등 좌표에 마커 추가 (이미지 마커 사용)
+      final List<Marker> securityLightMarkers = [];
+      for (int i = 0; i < securityLightCoords.length; i++) {
+        final coord = securityLightCoords[i] as List;
+        final lng = coord[0] as double;
+        final lat = coord[1] as double;
+
+        final securityLightMarker = Marker(
+          markerId: 'security_light_$i',
+          latLng: LatLng(lat, lng),
+          infoWindowContent: '보안등 위치 $i',
+          width: 40,
+          height: 40,
+        );
+        securityLightMarkers.add(securityLightMarker);
+        print('보안등 마커 $i 생성: ($lat, $lng)');
       }
 
       // 편의점 마커 생성
@@ -353,7 +352,27 @@ class _ServicePageState extends State<ServicePage> {
       } catch (e) {
         print('도착지 마커 이미지 로드 실패: $e');
       }
-      
+
+      // 카메라 마커에 이미지 추가 (비동기 처리)
+      for (int i = 0; i < cameraMarkers.length; i++) {
+        try {
+          final markerIcon = await MarkerIcon.fromAsset('assets/images/카메라.png');
+          cameraMarkers[i].icon = markerIcon;
+        } catch (e) {
+          print('카메라 마커 이미지 로드 실패: $e');
+        }
+      }
+
+      // 보안등 마커에 이미지 추가 (비동기 처리)
+      for (int i = 0; i < securityLightMarkers.length; i++) {
+        try {
+          final markerIcon = await MarkerIcon.fromAsset('assets/images/보안등.png');
+          securityLightMarkers[i].icon = markerIcon;
+        } catch (e) {
+          print('보안등 마커 이미지 로드 실패: $e');
+        }
+      }
+
       // 편의점 마커에 이미지 추가 (비동기 처리)
       for (int i = 0; i < convenienceStoreMarkers.length; i++) {
         try {
@@ -362,12 +381,12 @@ class _ServicePageState extends State<ServicePage> {
         } catch (e) {
           print('편의점 마커 이미지 로드 실패: $e');
         }
-      }      
+      }
       
-      // 모든 마커를 한 번에 추가 (출발지, 도착지, 카메라 위치)
-      final allMarkers = [origin_marker, destination_marker, ...cameraMarkers, ...convenienceStoreMarkers];
+      // 모든 마커를 한 번에 추가 (출발지, 도착지, 카메라, 편의점)
+      final allMarkers = [origin_marker, destination_marker, ...cameraMarkers, ...securityLightMarkers, ...convenienceStoreMarkers];
       await _mapController!.addMarker(markers: allMarkers);
-      print('총 ${allMarkers.length}개의 마커 추가 완료 (출발지, 도착지, 카메라 위치)');
+      print('총 ${allMarkers.length}개의 마커 추가 완료 (출발지, 도착지, 카메라, 보안등, 편의점)');
 
       
       // getWalkRoute 함수를 사용하여 경로 정보 가져오기
@@ -398,7 +417,7 @@ class _ServicePageState extends State<ServicePage> {
           final endLng = vertexes[2] as double;
           final endLat = vertexes[3] as double;
           
-          print('Road $i: 시작점($startLat, $startLng) → 도착점($endLat, $endLng)');
+          // print('Road $i: 시작점($startLat, $startLng) → 도착점($endLat, $endLng)');
           
           // Polyline 생성
           final polyline = Polyline(
@@ -415,7 +434,7 @@ class _ServicePageState extends State<ServicePage> {
           );
           
           allPolylines.add(polyline);
-          print('Road $i polyline 생성 완료');
+          // print('Road $i polyline 생성 완료');
         }
       }
       
@@ -443,7 +462,7 @@ class _ServicePageState extends State<ServicePage> {
           final endLng = vertexes[2] as double;
           final endLat = vertexes[3] as double;
           
-          print('안전 경로 Road $i: 시작점($startLat, $startLng) → 도착점($endLat, $endLng)');
+          // print('안전 경로 Road $i: 시작점($startLat, $startLng) → 도착점($endLat, $endLng)');
           
           // 안전 경로용 Polyline 생성 (파란색 계열)
           final safePolyline = Polyline(
@@ -460,7 +479,7 @@ class _ServicePageState extends State<ServicePage> {
           );
           
           allPolylines.add(safePolyline);
-          print('안전 경로 Road $i polyline 생성 완료');
+          // print('안전 경로 Road $i polyline 생성 완료');
         }
       }
       
@@ -468,6 +487,33 @@ class _ServicePageState extends State<ServicePage> {
       if (allPolylines.isNotEmpty) {
         await _mapController!.addPolyline(polylines: allPolylines);
         print('총 ${allPolylines.length}개의 polyline을 한 번에 추가 완료 (기존 경로 + 안전 경로)');
+      }
+      
+      // 카메라 좌표를 기준으로 Circle 생성 (카메라가 비추는 영역 표시)
+      final List<Circle> cameraCircles = [];
+      for (int i = 0; i < cameraCoords.length; i++) {
+        final coord = cameraCoords[i] as List;
+        final lng = coord[0] as double;
+        final lat = coord[1] as double;
+        
+        final cameraCircle = Circle(
+          circleId: 'camera_area_$i',
+          center: LatLng(lat, lng),
+          radius: 20.0, // 반지름 20미터 (카메라가 비추는 영역)
+          strokeWidth: 0, // 테두리 없음
+          fillColor: Colors.orange, // 주황색 채우기
+          fillOpacity: 0.5, // 50% 투명도
+          zIndex: 3, // 마커와 polyline보다 위에 표시
+        );
+        
+        cameraCircles.add(cameraCircle);
+        print('카메라 영역 Circle $i 생성: 중심($lat, $lng), 반지름 20m');
+      }
+      
+      // 모든 Circle을 지도에 추가
+      if (cameraCircles.isNotEmpty) {
+        await _mapController!.addCircle(circles: cameraCircles);
+        print('총 ${cameraCircles.length}개의 카메라 영역 Circle 추가 완료');
       }
       
       // 상태 업데이트
