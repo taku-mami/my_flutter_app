@@ -3,6 +3,7 @@ import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/app_drawer.dart';
 import 'dart:convert';
+import 'dart:math' as math;
 
 class ServicePage extends StatefulWidget {
   const ServicePage({super.key});
@@ -13,9 +14,6 @@ class ServicePage extends StatefulWidget {
 
 class _ServicePageState extends State<ServicePage> {
   KakaoMapController? _mapController;
-  
-  final LatLng seomyeonStation = LatLng(35.157759003, 129.059317193); // 서면역 좌표
-  final LatLng jeonpoStation = LatLng(35.152854756, 129.065219588); // 전포역 좌표
 
   /// 출발지/도착지 검색을 위한 자연어와 좌표 정보
   final List<Map<String, dynamic>> locationData = [
@@ -26,6 +24,14 @@ class _ServicePageState extends State<ServicePage> {
     {
       "localName": "개금대동아파트",
       "coord": [129.02072861028753, 35.14357891484248]
+    },
+    {
+      "localName": "배치과의원",
+      "coord": [129.054016103073, 35.1778255368528]
+    },
+    {
+      "localName": "초읍하늘채포레스원아파트",
+      "coord": [129.050549777887, 35.1798713530121]
     }
   ];
 
@@ -51,10 +57,86 @@ class _ServicePageState extends State<ServicePage> {
     required LatLng destination,
     List<LatLng>? waypoints,
   }) {
-    // 하드코딩된 경로 정보 반환
-    final routeData = {"trans_id":"01872ad0a5577deeadc7f87ba0ec2936","routes":[{"result_code":0,"result_message":"성공","summary":{"distance":1257,"duration":1203},"sections":[{"distance":246,"duration":258,"roads":[{"distance":29,"duration":23,"vertexes":[129.014987697039,35.1460392279298,129.0151592664802,35.14629159089885]},{"distance":46,"duration":36,"vertexes":[129.0151592664802,35.14629159089885,129.0154028037804,35.146460815979545]},{"distance":26,"duration":20,"vertexes":[129.0154028037804,35.146460815979545,129.01553224300568,35.146279451596534]},{"distance":36,"duration":28,"vertexes":[129.01553224300568,35.146279451596534,129.01568362799128,35.14609790312368]},{"distance":25,"duration":20,"vertexes":[129.01568362799128,35.14609790312368,129.01578104255194,35.14598891875975]},{"distance":20,"duration":16,"vertexes":[129.01578104255194,35.14598891875975,129.01585606258516,35.145844066138864]},{"distance":13,"duration":10,"vertexes":[129.01585606258516,35.145844066138864,129.01589995510216,35.14584369815495]},{"distance":50,"duration":40,"vertexes":[129.01589995510216,35.14584369815495,129.01617573977722,35.145958567439706]},{"distance":18,"duration":14,"vertexes":[129.01617573977722,35.145958567439706,129.01624157863804,35.14595801528263]},{"distance":8,"duration":6,"vertexes":[129.01624157863804,35.14595801528263,129.01625187951623,35.14590384500331]},{"distance":14,"duration":11,"vertexes":[129.01625187951623,35.14590384500331,129.01621783970643,35.14581399067061]},{"distance":7,"duration":5,"vertexes":[129.01621783970643,35.14581399067061,129.01619533327133,35.14576910951208]},{"distance":39,"duration":31,"vertexes":[129.01619533327133,35.14576910951208,129.01640281396678,35.145686243493]},{"distance":25,"duration":20,"vertexes":[129.01640281396678,35.145686243493,129.01652351813303,35.14568523095833]},{"distance":32,"duration":25,"vertexes":[129.01652351813303,35.14568523095833,129.01645420548124,35.14540637897469]},{"distance":52,"duration":41,"vertexes":[129.01645420548124,35.14540637897469,129.01674991783023,35.145358828134036]},{"distance":54,"duration":43,"vertexes":[129.01674991783023,35.145358828134036,129.01727583962722,35.14529131616824]},{"distance":55,"duration":44,"vertexes":[129.01727583962722,35.14529131616824,129.01781250911222,35.14520568368772]},{"distance":20,"duration":16,"vertexes":[129.01781250911222,35.14520568368772,129.01787845955374,35.14521414368979]},{"distance":15,"duration":12,"vertexes":[129.01787845955374,35.14521414368979,129.01793310028967,35.14519565672294]},{"distance":49,"duration":39,"vertexes":[129.01793310028967,35.14519565672294,129.01840381797686,35.145101561671474]},{"distance":25,"duration":20,"vertexes":[129.01840381797686,35.145101561671474,129.01850257516384,35.14510073162422]},{"distance":49,"duration":39,"vertexes":[129.01850257516384,35.14510073162422,129.01935689725602,35.1449673520313]},{"distance":19,"duration":15,"vertexes":[129.01935689725602,35.1449673520313,129.0192884746408,35.1447606060694]},{"distance":50,"duration":40,"vertexes":[129.0192884746408,35.1447606060694,129.01987966579938,35.1446474638959]},{"distance":8,"duration":6,"vertexes":[129.01987966579938,35.1446474638959,129.01986801822008,35.144593478050375]},{"distance":43,"duration":34,"vertexes":[129.01986801822008,35.144593478050375,129.02028589006764,35.144662072123076]},{"distance":24,"duration":19,"vertexes":[129.02028589006764,35.144662072123076,129.0203800344351,35.144291706230575]},{"distance":8,"duration":6,"vertexes":[129.0203800344351,35.144291706230575,129.02037913449746,35.14421960197018]},{"distance":19,"duration":15,"vertexes":[129.02037913449746,35.14421960197018,129.02033344312514,35.14407576303629]},{"distance":15,"duration":12,"vertexes":[129.02033344312514,35.14407576303629,129.02029894974117,35.1439498577541]},{"distance":15,"duration":12,"vertexes":[129.02029894974117,35.1439498577541,129.02026445646814,35.1438239524577]},{"distance":13,"duration":10,"vertexes":[129.02026445646814,35.1438239524577,129.0202301882528,35.14371607321464]},{"distance":18,"duration":14,"vertexes":[129.0202301882528,35.14371607321464,129.02037204759995,35.14365178088884]},{"distance":21,"duration":16,"vertexes":[129.02037204759995,35.14365178088884,129.0205358523421,35.14358730357688]},{"distance":42,"duration":33,"vertexes":[129.0205358523421,35.14358730357688,129.02072861028753,35.14357891484248]}]}]}]};
+    // locationData에서 '개금2동예슬어린이집'과 '개금대동아파트' 좌표 찾기
+    final s1OriginCoords = locationData
+        .firstWhere((location) => location['localName'] == '개금2동예슬어린이집')['coord'] as List;
+    final s1Origin = LatLng(s1OriginCoords[1] as double, s1OriginCoords[0] as double);
     
-    return jsonEncode(routeData);
+    final s1DestinationCoords = locationData
+        .firstWhere((location) => location['localName'] == '개금대동아파트')['coord'] as List;
+    final s1Destination = LatLng(s1DestinationCoords[1] as double, s1DestinationCoords[0] as double);
+
+    // locationData에서 '배치과의원'과 '초읍하늘채포레스원아파트' 좌표 찾기
+    final s2OriginCoords = locationData
+        .firstWhere((location) => location['localName'] == '배치과의원')['coord'] as List;
+    final s2Origin = LatLng(s2OriginCoords[1] as double, s2OriginCoords[0] as double);
+    
+    final s2DestinationCoords = locationData
+        .firstWhere((location) => location['localName'] == '초읍하늘채포레스원아파트')['coord'] as List;
+    final s2Destination = LatLng(s2DestinationCoords[1] as double, s2DestinationCoords[0] as double);
+
+    
+    // 하드코딩된 최단 경로 정보 반환
+    if (origin.latitude == s1Origin.latitude
+      && origin.longitude == s1Origin.longitude
+      && destination.latitude == s1Destination.latitude
+      && destination.longitude == s1Destination.longitude) {
+        final s1RouteData = {"trans_id":"01872ad0a5577deeadc7f87ba0ec2936","routes":[{"result_code":0,"result_message":"성공","summary":{"distance":1257,"duration":1203},"sections":[{"distance":246,"duration":258,"roads":[{"distance":29,"duration":23,"vertexes":[129.014987697039,35.1460392279298,129.0151592664802,35.14629159089885]},{"distance":46,"duration":36,"vertexes":[129.0151592664802,35.14629159089885,129.0154028037804,35.146460815979545]},{"distance":26,"duration":20,"vertexes":[129.0154028037804,35.146460815979545,129.01553224300568,35.146279451596534]},{"distance":36,"duration":28,"vertexes":[129.01553224300568,35.146279451596534,129.01568362799128,35.14609790312368]},{"distance":25,"duration":20,"vertexes":[129.01568362799128,35.14609790312368,129.01578104255194,35.14598891875975]},{"distance":20,"duration":16,"vertexes":[129.01578104255194,35.14598891875975,129.01585606258516,35.145844066138864]},{"distance":13,"duration":10,"vertexes":[129.01585606258516,35.145844066138864,129.01589995510216,35.14584369815495]},{"distance":50,"duration":40,"vertexes":[129.01589995510216,35.14584369815495,129.01617573977722,35.145958567439706]},{"distance":18,"duration":14,"vertexes":[129.01617573977722,35.145958567439706,129.01624157863804,35.14595801528263]},{"distance":8,"duration":6,"vertexes":[129.01624157863804,35.14595801528263,129.01625187951623,35.14590384500331]},{"distance":14,"duration":11,"vertexes":[129.01625187951623,35.14590384500331,129.01621783970643,35.14581399067061]},{"distance":7,"duration":5,"vertexes":[129.01621783970643,35.14581399067061,129.01619533327133,35.14576910951208]},{"distance":39,"duration":31,"vertexes":[129.01619533327133,35.14576910951208,129.01640281396678,35.145686243493]},{"distance":25,"duration":20,"vertexes":[129.01640281396678,35.145686243493,129.01652351813303,35.14568523095833]},{"distance":32,"duration":25,"vertexes":[129.01652351813303,35.14568523095833,129.01645420548124,35.14540637897469]},{"distance":52,"duration":41,"vertexes":[129.01645420548124,35.14540637897469,129.01674991783023,35.145358828134036]},{"distance":54,"duration":43,"vertexes":[129.01674991783023,35.145358828134036,129.01727583962722,35.14529131616824]},{"distance":55,"duration":44,"vertexes":[129.01727583962722,35.14529131616824,129.01781250911222,35.14520568368772]},{"distance":20,"duration":16,"vertexes":[129.01781250911222,35.14520568368772,129.01787845955374,35.14521414368979]},{"distance":15,"duration":12,"vertexes":[129.01787845955374,35.14521414368979,129.01793310028967,35.14519565672294]},{"distance":49,"duration":39,"vertexes":[129.01793310028967,35.14519565672294,129.01840381797686,35.145101561671474]},{"distance":25,"duration":20,"vertexes":[129.01840381797686,35.145101561671474,129.01850257516384,35.14510073162422]},{"distance":49,"duration":39,"vertexes":[129.01850257516384,35.14510073162422,129.01935689725602,35.1449673520313]},{"distance":19,"duration":15,"vertexes":[129.01935689725602,35.1449673520313,129.0192884746408,35.1447606060694]},{"distance":50,"duration":40,"vertexes":[129.0192884746408,35.1447606060694,129.01987966579938,35.1446474638959]},{"distance":8,"duration":6,"vertexes":[129.01987966579938,35.1446474638959,129.01986801822008,35.144593478050375]},{"distance":43,"duration":34,"vertexes":[129.01986801822008,35.144593478050375,129.02028589006764,35.144662072123076]},{"distance":24,"duration":19,"vertexes":[129.02028589006764,35.144662072123076,129.0203800344351,35.144291706230575]},{"distance":8,"duration":6,"vertexes":[129.0203800344351,35.144291706230575,129.02037913449746,35.14421960197018]},{"distance":19,"duration":15,"vertexes":[129.02037913449746,35.14421960197018,129.02033344312514,35.14407576303629]},{"distance":15,"duration":12,"vertexes":[129.02033344312514,35.14407576303629,129.02029894974117,35.1439498577541]},{"distance":15,"duration":12,"vertexes":[129.02029894974117,35.1439498577541,129.02026445646814,35.1438239524577]},{"distance":13,"duration":10,"vertexes":[129.02026445646814,35.1438239524577,129.0202301882528,35.14371607321464]},{"distance":18,"duration":14,"vertexes":[129.0202301882528,35.14371607321464,129.02037204759995,35.14365178088884]},{"distance":21,"duration":16,"vertexes":[129.02037204759995,35.14365178088884,129.0205358523421,35.14358730357688]},{"distance":42,"duration":33,"vertexes":[129.0205358523421,35.14358730357688,129.02072861028753,35.14357891484248]}]}]}]};
+        return jsonEncode(s1RouteData);
+    }
+    else if (origin.latitude == s2Origin.latitude
+      && origin.longitude == s2Origin.longitude
+      && destination.latitude == s2Destination.latitude
+      && destination.longitude == s2Destination.longitude) {
+        final s2RouteData = {"trans_id": "01872ad0a5577deeadc7f87ba0ec2936", "routes": [{"result_code": 0, "result_message": "성공", "summary": {"distance": 2850, "duration": 2420}, "sections": [{"distance": 2850, "duration": 2420, "roads": [{"distance": 22, "duration": 20, "vertexes": [129.054016103073, 35.1778255368528, 129.05383476048, 35.177933780439076]}, {"distance": 41, "duration": 37, "vertexes": [129.05383476048, 35.177933780439076, 129.05360295771172, 35.177836644134544]}, {"distance": 35, "duration": 32, "vertexes": [129.05360295771172, 35.177836644134544, 129.0535706073023, 35.1778819950282]}, {"distance": 180, "duration": 165, "vertexes": [129.0535706073023, 35.1778819950282, 129.0530970217733, 35.17861623931534]}, {"distance": 25, "duration": 23, "vertexes": [129.0530970217733, 35.17861623931534, 129.05306478702488, 35.17867060296609]}, {"distance": 195, "duration": 180, "vertexes": [129.05306478702488, 35.17867060296609, 129.05241439059435, 35.17931624271385]}, {"distance": 28, "duration": 25, "vertexes": [129.05241439059435, 35.17931624271385, 129.0523492226038, 35.17937089232519]}, {"distance": 220, "duration": 200, "vertexes": [129.0523492226038, 35.17937089232519, 129.05158857467887, 35.18004528261611]}, {"distance": 30, "duration": 28, "vertexes": [129.05158857467887, 35.18004528261611, 129.05150156648372, 35.18004528261611]}, {"distance": 175, "duration": 160, "vertexes": [129.05150156648372, 35.18004528261611, 129.05097893434544, 35.18038333293857]}, {"distance": 150, "duration": 140, "vertexes": [129.05097893434544, 35.18038333293857, 129.05049116321211, 35.18001799460281]}]}]}]};
+        return jsonEncode(s2RouteData);
+      }
+    print("최단 경로 시나리오를 벗어났습니다.");
+    return jsonEncode({});
+  }
+
+  /// 안심 도보 경로 정보를 반환하는 임시 함수 (하드코딩)
+  String getSafeWalkRoute({
+    required LatLng origin,
+    required LatLng destination,
+    List<LatLng>? waypoints,
+  }) {
+    // locationData에서 '개금2동예슬어린이집'과 '개금대동아파트' 좌표 찾기
+    final s1OriginCoords = locationData
+        .firstWhere((location) => location['localName'] == '개금2동예슬어린이집')['coord'] as List;
+    final s1Origin = LatLng(s1OriginCoords[1] as double, s1OriginCoords[0] as double);
+    
+    final s1DestinationCoords = locationData
+        .firstWhere((location) => location['localName'] == '개금대동아파트')['coord'] as List;
+    final s1Destination = LatLng(s1DestinationCoords[1] as double, s1DestinationCoords[0] as double);
+
+    // locationData에서 '배치과의원'과 '초읍하늘채포레스원아파트' 좌표 찾기
+    final s2OriginCoords = locationData
+        .firstWhere((location) => location['localName'] == '배치과의원')['coord'] as List;
+    final s2Origin = LatLng(s2OriginCoords[1] as double, s2OriginCoords[0] as double);
+    
+    final s2DestinationCoords = locationData
+        .firstWhere((location) => location['localName'] == '초읍하늘채포레스원아파트')['coord'] as List;
+    final s2Destination = LatLng(s2DestinationCoords[1] as double, s2DestinationCoords[0] as double);
+
+    // 하드코딩된 최단 경로 정보 반환
+    if (origin.latitude == s1Origin.latitude
+      && origin.longitude == s1Origin.longitude
+      && destination.latitude == s1Destination.latitude
+      && destination.longitude == s1Destination.longitude) {
+        final s1RouteData = {"trans_id":"01872ad0a5577deeadc7f87ba0ec2936","routes":[{"result_code":0,"result_message":"성공","summary":{"distance":1257,"duration":1203},"sections":[{"distance":246,"duration":258,"roads":[{"distance":22,"duration":20,"vertexes":[129.014987697039,35.1460392279298,129.015159266,35.146291591]},{"distance":15,"duration":12,"vertexes":[129.015159266,35.146291591,129.015402804,35.146460816]},{"distance":18,"duration":15,"vertexes":[129.015402804,35.146460816,129.015532243,35.146279452]},{"distance":20,"duration":18,"vertexes":[129.015532243,35.146279452,129.015683628,35.146097903]},{"distance":14,"duration":12,"vertexes":[129.015683628,35.146097903,129.015781043,35.145988919]},{"distance":16,"duration":14,"vertexes":[129.015781043,35.145988919,129.015856063,35.145844066]},{"distance":8,"duration":7,"vertexes":[129.015856063,35.145844066,129.015899955,35.145843698]},{"distance":28,"duration":25,"vertexes":[129.015899955,35.145843698,129.016175740,35.145958567]},{"distance":7,"duration":6,"vertexes":[129.016175740,35.145958567,129.016241579,35.145958015]},{"distance":5,"duration":4,"vertexes":[129.016241579,35.145958015,129.016251880,35.145903845]},{"distance":12,"duration":10,"vertexes":[129.016251880,35.145903845,129.016217840,35.145813991]},{"distance":8,"duration":7,"vertexes":[129.016217840,35.145813991,129.016195333,35.145769110]},{"distance":25,"duration":22,"vertexes":[129.016195333,35.145769110,129.016402814,35.145686243]},{"distance":12,"duration":10,"vertexes":[129.016402814,35.145686243,129.016523518,35.145685231]},{"distance":32,"duration":28,"vertexes":[129.016523518,35.145685231,129.016454205,35.145406379]},{"distance":30,"duration":26,"vertexes":[129.016454205,35.145406379,129.016749918,35.145358828]},{"distance":52,"duration":45,"vertexes":[129.016749918,35.145358828,129.017275840,35.145291316]},{"distance":3,"duration":3,"vertexes":[129.017275840,35.145291316,129.017264306,35.145246343]},{"distance":15,"duration":13,"vertexes":[129.017264306,35.145246343,129.017251875,35.145129266]},{"distance":48,"duration":42,"vertexes":[129.017251875,35.145129266,129.017180654,35.144697192]},{"distance":14,"duration":12,"vertexes":[129.017180654,35.144697192,129.017168111,35.144571102]},{"distance":44,"duration":38,"vertexes":[129.017168111,35.144571102,129.017108312,35.144174989]},{"distance":4,"duration":3,"vertexes":[129.017108312,35.144174989,129.017107864,35.144138937]},{"distance":28,"duration":24,"vertexes":[129.017107864,35.144138937,129.017381850,35.144109594]},{"distance":40,"duration":35,"vertexes":[129.017381850,35.144109594,129.017776200,35.144052199]},{"distance":20,"duration":17,"vertexes":[129.017776200,35.144052199,129.017973263,35.144014488]},{"distance":10,"duration":8,"vertexes":[129.017973263,35.144014488,129.018049625,35.143977790]},{"distance":2,"duration":2,"vertexes":[129.018049625,35.143977790,129.018049512,35.143968777]},{"distance":12,"duration":10,"vertexes":[129.018049512,35.143968777,129.018026444,35.143878831]},{"distance":42,"duration":36,"vertexes":[129.018026444,35.143878831,129.017922527,35.143465061]},{"distance":2,"duration":2,"vertexes":[129.017922527,35.143465061,129.017922414,35.143456048]},{"distance":2,"duration":2,"vertexes":[129.017922414,35.143456048,129.017922527,35.143465061]},{"distance":31,"duration":27,"vertexes":[129.017922527,35.143465061,129.018229204,35.143417414]},{"distance":33,"duration":29,"vertexes":[129.018229204,35.143417414,129.018557826,35.143369583]},{"distance":35,"duration":31,"vertexes":[129.018557826,35.143369583,129.018908394,35.143321566]},{"distance":6,"duration":5,"vertexes":[129.018908394,35.143321566,129.018941761,35.143357341]},{"distance":8,"duration":7,"vertexes":[129.018941761,35.143357341,129.019007486,35.143347774]},{"distance":28,"duration":24,"vertexes":[129.019007486,35.143347774,129.019282817,35.143426584]},{"distance":54,"duration":47,"vertexes":[129.019282817,35.143426584,129.019822395,35.143575282]},{"distance":30,"duration":26,"vertexes":[129.019822395,35.143575282,129.020119448,35.143635880]},{"distance":7,"duration":6,"vertexes":[129.020119448,35.143635880,129.020185285,35.143635325]},{"distance":6,"duration":5,"vertexes":[129.020185285,35.143635325,129.020218766,35.143680113]},{"distance":3,"duration":3,"vertexes":[129.020218766,35.143680113,129.020230188,35.143716073]},{"distance":18,"duration":15,"vertexes":[129.020230188,35.143716073,129.020372048,35.143651781]},{"distance":20,"duration":17,"vertexes":[129.020372048,35.143651781,129.020535852,35.143587304]},{"distance":41,"duration":37,"vertexes":[129.020535852,35.143587304,129.02072861028753,35.14357891484248]}]}]}]};
+        return jsonEncode(s1RouteData);
+    }
+    else if (origin.latitude == s2Origin.latitude
+      && origin.longitude == s2Origin.longitude
+      && destination.latitude == s2Destination.latitude
+      && destination.longitude == s2Destination.longitude) {
+        final s2RouteData = {"trans_id": "01872ad0a5577deeadc7f87ba0ec2936", "routes": [{"result_code": 0, "result_message": "성공", "summary": {"distance": 3850, "duration": 2890}, "sections": [{"distance": 3850, "duration": 2890, "roads": [{"distance": 22, "duration": 20, "vertexes": [129.054016103073, 35.1778255368528, 129.053834760, 35.177933780]}, {"distance": 25, "duration": 23, "vertexes": [129.053834760, 35.177933780, 129.053602958, 35.177836644]}, {"distance": 15, "duration": 14, "vertexes": [129.053602958, 35.177836644, 129.053570607, 35.177881995]}, {"distance": 30, "duration": 28, "vertexes": [129.053570607, 35.177881995, 129.053305292, 35.177740080]}, {"distance": 8, "duration": 7, "vertexes": [129.053305292, 35.177740080, 129.053305176, 35.177731067]}, {"distance": 10, "duration": 9, "vertexes": [129.053305176, 35.177731067, 129.053305292, 35.177740080]}, {"distance": 12, "duration": 11, "vertexes": [129.053305292, 35.177740080, 129.053228683, 35.177758774]}, {"distance": 85, "duration": 75, "vertexes": [129.053228683, 35.177758774, 129.052819681, 35.178393303]}, {"distance": 18, "duration": 16, "vertexes": [129.052819681, 35.178393303, 129.052754514, 35.178447953]}, {"distance": 20, "duration": 18, "vertexes": [129.052754514, 35.178447953, 129.052644276, 35.178412855]}, {"distance": 35, "duration": 32, "vertexes": [129.052644276, 35.178412855, 129.052445173, 35.178297405]}, {"distance": 40, "duration": 36, "vertexes": [129.052445173, 35.178297405, 129.052168416, 35.178119531]}, {"distance": 32, "duration": 29, "vertexes": [129.052168416, 35.178119531, 129.051980291, 35.178003984]}, {"distance": 8, "duration": 7, "vertexes": [129.051980291, 35.178003984, 129.051980175, 35.177994972]}, {"distance": 10, "duration": 9, "vertexes": [129.051980175, 35.177994972, 129.051980291, 35.178003984]}, {"distance": 15, "duration": 14, "vertexes": [129.051980291, 35.178003984, 129.051970824, 35.178121247]}, {"distance": 70, "duration": 62, "vertexes": [129.051970824, 35.178121247, 129.051713985, 35.178637270]}, {"distance": 25, "duration": 22, "vertexes": [129.051713985, 35.178637270, 129.051638768, 35.178764118]}, {"distance": 20, "duration": 18, "vertexes": [129.051638768, 35.178764118, 129.051596019, 35.178854628]}, {"distance": 8, "duration": 7, "vertexes": [129.051596019, 35.178854628, 129.051596135, 35.178863641]}, {"distance": 45, "duration": 40, "vertexes": [129.051596135, 35.178863641, 129.051512378, 35.179179855]}, {"distance": 70, "duration": 62, "vertexes": [129.051512378, 35.179179855, 129.051365309, 35.179694923]}, {"distance": 22, "duration": 20, "vertexes": [129.051365309, 35.179694923, 129.051344398, 35.179776230]}, {"distance": 20, "duration": 18, "vertexes": [129.051344398, 35.179776230, 129.051367398, 35.179857155]}, {"distance": 15, "duration": 14, "vertexes": [129.051367398, 35.179857155, 129.051389701, 35.179884004]}, {"distance": 35, "duration": 31, "vertexes": [129.051389701, 35.179884004, 129.051588575, 35.179981430]}, {"distance": 25, "duration": 22, "vertexes": [129.051588575, 35.179981430, 129.051501566, 35.180045283]}, {"distance": 75, "duration": 66, "vertexes": [129.051501566, 35.180045283, 129.050978934, 35.180383333]}, {"distance": 70, "duration": 62, "vertexes": [129.050978934, 35.180383333, 129.050491163, 35.180017995]}]}]}]};
+        return jsonEncode(s2RouteData);
+      }
+
+    print("안전 경로 시나리오를 벗어났습니다.");
+    return jsonEncode({});
   }
 
   /// 경로의 중간 좌표를 구하는 함수
@@ -110,18 +192,6 @@ class _ServicePageState extends State<ServicePage> {
       return LatLng(35.1456, 129.0174);
     }
   }
-
-  /// 안심 도보 경로 정보를 반환하는 임시 함수 (하드코딩)
-  String getSafeWalkRoute({
-    required LatLng origin,
-    required LatLng destination,
-    List<LatLng>? waypoints,
-  }) {
-    // 업데이트된 안전 경로 정보
-    final safeRouteData = {"trans_id":"01872ad0a5577deeadc7f87ba0ec2936","routes":[{"result_code":0,"result_message":"성공","summary":{"distance":1257,"duration":1203},"sections":[{"distance":246,"duration":258,"roads":[{"distance":22,"duration":20,"vertexes":[129.014987697039,35.1460392279298,129.015159266,35.146291591]},{"distance":15,"duration":12,"vertexes":[129.015159266,35.146291591,129.015402804,35.146460816]},{"distance":18,"duration":15,"vertexes":[129.015402804,35.146460816,129.015532243,35.146279452]},{"distance":20,"duration":18,"vertexes":[129.015532243,35.146279452,129.015683628,35.146097903]},{"distance":14,"duration":12,"vertexes":[129.015683628,35.146097903,129.015781043,35.145988919]},{"distance":16,"duration":14,"vertexes":[129.015781043,35.145988919,129.015856063,35.145844066]},{"distance":8,"duration":7,"vertexes":[129.015856063,35.145844066,129.015899955,35.145843698]},{"distance":28,"duration":25,"vertexes":[129.015899955,35.145843698,129.016175740,35.145958567]},{"distance":7,"duration":6,"vertexes":[129.016175740,35.145958567,129.016241579,35.145958015]},{"distance":5,"duration":4,"vertexes":[129.016241579,35.145958015,129.016251880,35.145903845]},{"distance":12,"duration":10,"vertexes":[129.016251880,35.145903845,129.016217840,35.145813991]},{"distance":8,"duration":7,"vertexes":[129.016217840,35.145813991,129.016195333,35.145769110]},{"distance":25,"duration":22,"vertexes":[129.016195333,35.145769110,129.016402814,35.145686243]},{"distance":12,"duration":10,"vertexes":[129.016402814,35.145686243,129.016523518,35.145685231]},{"distance":32,"duration":28,"vertexes":[129.016523518,35.145685231,129.016454205,35.145406379]},{"distance":30,"duration":26,"vertexes":[129.016454205,35.145406379,129.016749918,35.145358828]},{"distance":52,"duration":45,"vertexes":[129.016749918,35.145358828,129.017275840,35.145291316]},{"distance":3,"duration":3,"vertexes":[129.017275840,35.145291316,129.017264306,35.145246343]},{"distance":15,"duration":13,"vertexes":[129.017264306,35.145246343,129.017251875,35.145129266]},{"distance":48,"duration":42,"vertexes":[129.017251875,35.145129266,129.017180654,35.144697192]},{"distance":14,"duration":12,"vertexes":[129.017180654,35.144697192,129.017168111,35.144571102]},{"distance":44,"duration":38,"vertexes":[129.017168111,35.144571102,129.017108312,35.144174989]},{"distance":4,"duration":3,"vertexes":[129.017108312,35.144174989,129.017107864,35.144138937]},{"distance":28,"duration":24,"vertexes":[129.017107864,35.144138937,129.017381850,35.144109594]},{"distance":40,"duration":35,"vertexes":[129.017381850,35.144109594,129.017776200,35.144052199]},{"distance":20,"duration":17,"vertexes":[129.017776200,35.144052199,129.017973263,35.144014488]},{"distance":10,"duration":8,"vertexes":[129.017973263,35.144014488,129.018049625,35.143977790]},{"distance":2,"duration":2,"vertexes":[129.018049625,35.143977790,129.018049512,35.143968777]},{"distance":12,"duration":10,"vertexes":[129.018049512,35.143968777,129.018026444,35.143878831]},{"distance":42,"duration":36,"vertexes":[129.018026444,35.143878831,129.017922527,35.143465061]},{"distance":2,"duration":2,"vertexes":[129.017922527,35.143465061,129.017922414,35.143456048]},{"distance":2,"duration":2,"vertexes":[129.017922414,35.143456048,129.017922527,35.143465061]},{"distance":31,"duration":27,"vertexes":[129.017922527,35.143465061,129.018229204,35.143417414]},{"distance":33,"duration":29,"vertexes":[129.018229204,35.143417414,129.018557826,35.143369583]},{"distance":35,"duration":31,"vertexes":[129.018557826,35.143369583,129.018908394,35.143321566]},{"distance":6,"duration":5,"vertexes":[129.018908394,35.143321566,129.018941761,35.143357341]},{"distance":8,"duration":7,"vertexes":[129.018941761,35.143357341,129.019007486,35.143347774]},{"distance":28,"duration":24,"vertexes":[129.019007486,35.143347774,129.019282817,35.143426584]},{"distance":54,"duration":47,"vertexes":[129.019282817,35.143426584,129.019822395,35.143575282]},{"distance":30,"duration":26,"vertexes":[129.019822395,35.143575282,129.020119448,35.143635880]},{"distance":7,"duration":6,"vertexes":[129.020119448,35.143635880,129.020185285,35.143635325]},{"distance":6,"duration":5,"vertexes":[129.020185285,35.143635325,129.020218766,35.143680113]},{"distance":3,"duration":3,"vertexes":[129.020218766,35.143680113,129.020230188,35.143716073]},{"distance":18,"duration":15,"vertexes":[129.020230188,35.143716073,129.020372048,35.143651781]},{"distance":20,"duration":17,"vertexes":[129.020372048,35.143651781,129.020535852,35.143587304]},{"distance":41,"duration":37,"vertexes":[129.020535852,35.143587304,129.02072861028753,35.14357891484248]}]}]}]};
-    
-        return jsonEncode(safeRouteData);
-  }
   
   /// 출발지 검색 필터링
   void _filterOriginLocations(String query) {
@@ -139,6 +209,33 @@ class _ServicePageState extends State<ServicePage> {
     });
   }
 
+  /// 두 좌표 간의 거리를 계산하는 함수 (Haversine 공식 사용)
+  /// 반환값: 킬로미터 단위
+  double _calculateDistance(LatLng point1, LatLng point2) {
+    const double earthRadius = 6371; // 지구 반지름 (km)
+    
+    final double lat1Rad = point1.latitude * (math.pi / 180);
+    final double lat2Rad = point2.latitude * (math.pi / 180);
+    final double deltaLatRad = (point2.latitude - point1.latitude) * (math.pi / 180);
+    final double deltaLngRad = (point2.longitude - point1.longitude) * (math.pi / 180);
+    
+    final double a = math.sin(deltaLatRad / 2) * math.sin(deltaLatRad / 2) +
+        math.cos(lat1Rad) * math.cos(lat2Rad) * math.sin(deltaLngRad / 2) * math.sin(deltaLngRad / 2);
+    final double c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+    
+    return earthRadius * c;
+  }
+  
+  /// 거리에 따른 적절한 줌 레벨을 반환하는 함수
+  int _getZoomLevelByDistance(double distanceKm) {
+    if (distanceKm < 0.5) return 3;      // 500m 미만: 매우 가까움
+    if (distanceKm < 1.0) return 4;      // 1km 미만: 가까움
+    if (distanceKm < 2.0) return 5;      // 2km 미만: 보통
+    if (distanceKm < 5.0) return 6;      // 5km 미만: 멀음
+    if (distanceKm < 10.0) return 7;     // 10km 미만: 매우 멀음
+    return 8;                            // 10km 이상: 가장 멀음
+  }
+  
   /// 도착지 검색 필터링
   void _filterDestinationLocations(String query) {
     if (query.isEmpty) {
@@ -160,7 +257,7 @@ class _ServicePageState extends State<ServicePage> {
     // 하드코딩된 카메라 좌표 정보 반환
     final cameraData = {
       "coords": [
-        [129.018820, 35.142774],
+        [129.018820, 35.142774], // 시나리오 1번
         [129.018092, 35.142866],
         [129.019968, 35.143056],
         [129.019624, 35.143295],
@@ -181,7 +278,12 @@ class _ServicePageState extends State<ServicePage> {
         [129.015890, 35.145850],
         [129.017730, 35.146010],
         [129.015462, 35.146440],
-        [129.016526, 35.146534]
+        [129.016526, 35.146534],
+        [129.054255, 35.177129], // 시나리오 2번
+        [129.053261, 35.177686],
+        [129.051939, 35.178019],
+        [129.052148, 35.179274],
+        [129.052178, 35.180389]
       ]
     };
     
@@ -193,7 +295,7 @@ class _ServicePageState extends State<ServicePage> {
     // 하드코딩된 보안등 좌표 정보 반환
     final securityLightData = {
       "coords": [
-        [129.018646, 35.143375],
+        [129.018646, 35.143375], // 시나리오 1번
         [129.018219, 35.143406],
         [129.019791, 35.143528],
         [129.018051, 35.143852],
@@ -204,7 +306,15 @@ class _ServicePageState extends State<ServicePage> {
         [129.016342, 35.145676],
         [129.016235, 35.145767],
         [129.016220, 35.146034],
-        [129.015518, 35.146214]
+        [129.015518, 35.146214],
+        [129.053238, 35.177860], // 시나리오 2번
+        [129.051895, 35.178013],
+        [129.052216, 35.178089],
+        [129.052307, 35.178127],
+        [129.052506, 35.178268],
+        [129.052750, 35.178558],
+        [129.051636, 35.178936],
+        [129.051468, 35.179646]
       ]
     };
     
@@ -212,11 +322,11 @@ class _ServicePageState extends State<ServicePage> {
   }
 
   /// 경찰서 좌표 정보를 반환하는 임시 함수 (하드코딩)
-  String getPoliceCoord() {
+  String getPoliceStationCoord() {
     // 하드코딩된 경찰서 좌표 정보 반환
     final policeData = {
       "coords": [
-        [129.06259149197297, 35.15497591543021]
+        [129.051617743443, 35.1789980589543] // 성지지구대
       ]
     };
     
@@ -335,6 +445,15 @@ class _ServicePageState extends State<ServicePage> {
         width: 40,
         height: 40,
       );
+      
+      // 출발지 마커에 이미지 추가 (비동기 처리)
+      try {
+        final originMarkerIcon = await MarkerIcon.fromAsset('assets/images/출발지.png');
+        origin_marker.icon = originMarkerIcon;
+        print('출발지 마커 이미지 적용 완료');
+      } catch (e) {
+        print('출발지 마커 이미지 로드 실패: $e');
+      }
 
       // 도착지 마커 생성
       final destination_marker = Marker(
@@ -345,7 +464,16 @@ class _ServicePageState extends State<ServicePage> {
         height: 40,
       );
       
-      // getCameraCoord 함수를 사용하여 카메라 좌표 정보 가져오기
+      // 도착지 마커에 이미지 추가 (비동기 처리)
+      try {
+        final destinationMarkerIcon = await MarkerIcon.fromAsset('assets/images/도착지.png');
+        destination_marker.icon = destinationMarkerIcon;
+        print('도착지 마커 이미지 적용 완료');
+      } catch (e) {
+        print('도착지 마커 이미지 로드 실패: $e');
+      }
+      
+      // 카메라 좌표 정보를 반환하는 임시 함수 호출
       final cameraJson = getCameraCoord();
       final cameraData = jsonDecode(cameraJson);
       final cameraCoords = cameraData['coords'] as List;
@@ -368,7 +496,17 @@ class _ServicePageState extends State<ServicePage> {
         print('카메라 마커 $i 생성: ($lat, $lng)');
       }
 
-      // 보안등 좌표 정보를 반환하는 임시 함수 (하드코딩)
+      // 카메라 마커에 이미지 추가 (비동기 처리)
+      for (int i = 0; i < cameraMarkers.length; i++) {
+        try {
+          final markerIcon = await MarkerIcon.fromAsset('assets/images/카메라.png');
+          cameraMarkers[i].icon = markerIcon;
+        } catch (e) {
+          print('카메라 마커 이미지 로드 실패: $e');
+        }
+      }
+
+      // 보안등 좌표 정보를 반환하는 임시 함수 호출
       final securityLightJson = getSecurityLightCoord();
       final securityLightData = jsonDecode(securityLightJson);
       final securityLightCoords = securityLightData['coords'] as List;
@@ -389,6 +527,16 @@ class _ServicePageState extends State<ServicePage> {
         );
         securityLightMarkers.add(securityLightMarker);
         print('보안등 마커 $i 생성: ($lat, $lng)');
+      }
+
+      // 보안등 마커에 이미지 추가 (비동기 처리)
+      for (int i = 0; i < securityLightMarkers.length; i++) {
+        try {
+          final markerIcon = await MarkerIcon.fromAsset('assets/images/보안등.png');
+          securityLightMarkers[i].icon = markerIcon;
+        } catch (e) {
+          print('보안등 마커 이미지 로드 실패: $e');
+        }
       }
 
       // 편의점 마커 생성
@@ -413,44 +561,6 @@ class _ServicePageState extends State<ServicePage> {
         convenienceStoreMarkers.add(convenienceStoreMarker);
         print('편의점 마커 $i 생성: ($lat, $lng)');
       }
-      
-      // 출발지 마커에 이미지 추가 (비동기 처리)
-      try {
-        final originMarkerIcon = await MarkerIcon.fromAsset('assets/images/출발지.png');
-        origin_marker.icon = originMarkerIcon;
-        print('출발지 마커 이미지 적용 완료');
-      } catch (e) {
-        print('출발지 마커 이미지 로드 실패: $e');
-      }
-      
-      // 도착지 마커에 이미지 추가 (비동기 처리)
-      try {
-        final destinationMarkerIcon = await MarkerIcon.fromAsset('assets/images/도착지.png');
-        destination_marker.icon = destinationMarkerIcon;
-        print('도착지 마커 이미지 적용 완료');
-      } catch (e) {
-        print('도착지 마커 이미지 로드 실패: $e');
-      }
-
-      // 카메라 마커에 이미지 추가 (비동기 처리)
-      for (int i = 0; i < cameraMarkers.length; i++) {
-        try {
-          final markerIcon = await MarkerIcon.fromAsset('assets/images/카메라.png');
-          cameraMarkers[i].icon = markerIcon;
-        } catch (e) {
-          print('카메라 마커 이미지 로드 실패: $e');
-        }
-      }
-
-      // 보안등 마커에 이미지 추가 (비동기 처리)
-      for (int i = 0; i < securityLightMarkers.length; i++) {
-        try {
-          final markerIcon = await MarkerIcon.fromAsset('assets/images/보안등.png');
-          securityLightMarkers[i].icon = markerIcon;
-        } catch (e) {
-          print('보안등 마커 이미지 로드 실패: $e');
-        }
-      }
 
       // 편의점 마커에 이미지 추가 (비동기 처리)
       for (int i = 0; i < convenienceStoreMarkers.length; i++) {
@@ -461,9 +571,49 @@ class _ServicePageState extends State<ServicePage> {
           print('편의점 마커 이미지 로드 실패: $e');
         }
       }
+
+      // 경찰서 마커 생성
+      final policeStationJson = getPoliceStationCoord();
+      final policeStationData = jsonDecode(policeStationJson);
+      final policeStationCoords = policeStationData['coords'] as List;
+
+      // 경찰서 좌표에 마커 추가 (이미지 마커 사용)
+      final List<Marker> policeStationMarkers = [];
+      for (int i = 0; i < policeStationCoords.length; i++) {
+        final coord = policeStationCoords[i] as List;
+        final lng = coord[0] as double;
+        final lat = coord[1] as double;
+        
+        final policeStationMarker = Marker(
+          markerId: 'police_station_$i',
+          latLng: LatLng(lat, lng),
+          infoWindowContent: '경찰서 위치 $i',
+          width: 30,
+          height: 30,
+        );
+        policeStationMarkers.add(policeStationMarker);
+        print('경찰서 마커 $i 생성: ($lat, $lng)');
+      }
+
+      // 경찰서 마커에 이미지 추가 (비동기 처리)
+      for (int i = 0; i < policeStationMarkers.length; i++) {
+        try {
+          final markerIcon = await MarkerIcon.fromAsset('assets/images/경찰마크.png');
+          policeStationMarkers[i].icon = markerIcon;
+        } catch (e) {
+          print('경찰서 마커 이미지 로드 실패: $e');
+        }
+      }
       
       // 모든 마커를 한 번에 추가 (출발지, 도착지, 카메라, 보안등, 편의점)
-      final allMarkers = [origin_marker, destination_marker, ...cameraMarkers, ...securityLightMarkers, ...convenienceStoreMarkers];
+      final allMarkers = [
+        origin_marker, 
+        destination_marker, 
+        ...cameraMarkers, 
+        ...securityLightMarkers, 
+        ...convenienceStoreMarkers,
+        ...policeStationMarkers
+      ];
       await _mapController!.addMarker(markers: allMarkers);
       print('총 ${allMarkers.length}개의 마커 추가 완료 (출발지, 도착지, 카메라, 보안등, 편의점)');
 
@@ -522,7 +672,7 @@ class _ServicePageState extends State<ServicePage> {
             ],
             strokeColor: Colors.grey, // 회색 계열
             strokeOpacity: 0.7,
-            strokeWidth: 5,
+            strokeWidth: 7,
             strokeStyle: StrokeStyle.solid,
             zIndex: 1,
           );
@@ -586,7 +736,7 @@ class _ServicePageState extends State<ServicePage> {
             ],
             strokeColor: Colors.green, // 초록색
             strokeOpacity: 0.8,
-            strokeWidth: 4,
+            strokeWidth: 8,
             strokeStyle: StrokeStyle.solid,
             zIndex: 2, // 기존 경로보다 위에 표시
           );
@@ -622,10 +772,21 @@ class _ServicePageState extends State<ServicePage> {
         cameraCircles.add(cameraCircle);
         print('카메라 영역 Circle $i 생성: 중심($lat, $lng), 반지름 20m');
       }
+
+      // 시나리오 2번 우범지역
+      final s2UnsafeAreaCircle = Circle(
+        circleId: 's2_unsafe_area_circle',
+        center: LatLng(35.17935, 129.05230),
+        radius: 50.0,
+        strokeWidth: 0,
+        fillColor: Colors.red,
+        fillOpacity: 0.3,
+        zIndex: 3,
+      );
       
       // 모든 Circle을 지도에 추가
       if (cameraCircles.isNotEmpty) {
-        await _mapController!.addCircle(circles: cameraCircles);
+        await _mapController!.addCircle(circles: [...cameraCircles, s2UnsafeAreaCircle]);
         print('총 ${cameraCircles.length}개의 카메라 영역 Circle 추가 완료');
       }
       
@@ -635,14 +796,20 @@ class _ServicePageState extends State<ServicePage> {
         originMarker = origin_marker;
       });
 
+      // 출발지와 도착지 간의 거리 계산
+      final double distance = _calculateDistance(originLatLng, destinationLatLng);
+      
+      // 거리에 따른 줌 레벨 조정
+      final int zoomLevel = _getZoomLevelByDistance(distance);
+      
       // 지도 중심을 출발지와 도착지의 중간 지점으로 이동하고 줌 레벨 조정
       final centerLat = (originLatLng.latitude + destinationLatLng.latitude) / 2;
       final centerLng = (originLatLng.longitude + destinationLatLng.longitude) / 2;
       final centerPoint = LatLng(centerLat, centerLng);
       
       _mapController!.setCenter(centerPoint);
-      _mapController!.setLevel(4); // 경로를 잘 볼 수 있도록 줌 레벨 조정
-      print('지도 중심 이동 및 줌 레벨 조정 완료');
+      _mapController!.setLevel(zoomLevel);
+      print('지도 중심 이동 및 줌 레벨 조정 완료 (거리: ${distance.toStringAsFixed(1)}km, 줌레벨: $zoomLevel)');
       
       print('$originText에서 $destinationText까지의 경로 생성됨');
 
@@ -669,7 +836,7 @@ class _ServicePageState extends State<ServicePage> {
         preferredSize: const Size.fromHeight(66.0), // 50 + 16
         child: Builder(
           builder: (context) => CustomAppBar(
-            title: '서비스',
+            title: '안심 길찾기 서비스',
             showMenuButton: true,
             onMenuPressed: () {
               Scaffold.of(context).openDrawer();
