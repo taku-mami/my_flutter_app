@@ -79,6 +79,7 @@ flutter:
     - assets/images/카메라.png
     - assets/images/보안등.png
     - assets/images/편의점.png
+    - assets/images/경찰마크.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
