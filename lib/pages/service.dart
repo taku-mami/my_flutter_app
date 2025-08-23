@@ -83,16 +83,16 @@ class _ServicePageState extends State<ServicePage> {
                   "distance": 22,
                   "duration": 20,
                   "vertexes": [
-                    129.059317193, 35.157759003,
-                    129.06512644062067, 35.157720909772266,
+                    129.014987697039,35.1460392279298,
+                    129.01900153422724, 35.143859141427654,
                   ]
                 },
                 {
                   "distance": 41,
                   "duration": 37,
                   "vertexes": [
-                    129.06512644062067, 35.157720909772266,
-                    129.065219588, 35.152854756
+                    129.01900153422724, 35.143859141427654,
+                    129.02072861028753,35.14357891484248
                   ]
                 }
               ]
@@ -279,6 +279,8 @@ class _ServicePageState extends State<ServicePage> {
         markerId: 'origin',
         latLng: originLatLng,
         infoWindowContent: '$originText (출발지)',
+        width: 40,
+        height: 40,
       );
 
       // 도착지 마커 생성
@@ -286,6 +288,8 @@ class _ServicePageState extends State<ServicePage> {
         markerId: 'destination',
         latLng: destinationLatLng,
         infoWindowContent: '$destinationText (도착지)',
+        width: 40,
+        height: 40,
       );
       
       // getCameraCoord 함수를 사용하여 카메라 좌표 정보 가져오기
@@ -308,9 +312,60 @@ class _ServicePageState extends State<ServicePage> {
         cameraMarkers.add(cameraMarker);
         print('카메라 마커 $i 생성: ($lat, $lng)');
       }
+
+      // 편의점 마커 생성
+      final convenienceStoreJson = getConvenienceStoreCoord();
+      final convenienceStoreData = jsonDecode(convenienceStoreJson);
+      final convenienceStoreCoords = convenienceStoreData['coords'] as List;
+
+      // 편의점 좌표에 마커 추가 (이미지 마커 사용)
+      final List<Marker> convenienceStoreMarkers = [];
+      for (int i = 0; i < convenienceStoreCoords.length; i++) {
+        final coord = convenienceStoreCoords[i] as List;
+        final lng = coord[0] as double;
+        final lat = coord[1] as double;
+
+        final convenienceStoreMarker = Marker(
+          markerId: 'convenience_store_$i',
+          latLng: LatLng(lat, lng),
+          infoWindowContent: '편의점 위치 $i',
+          width: 40,
+          height: 40,
+        );
+        convenienceStoreMarkers.add(convenienceStoreMarker);
+        print('편의점 마커 $i 생성: ($lat, $lng)');
+      }
+      
+      // 출발지 마커에 이미지 추가 (비동기 처리)
+      try {
+        final originMarkerIcon = await MarkerIcon.fromAsset('assets/images/출발지.png');
+        origin_marker.icon = originMarkerIcon;
+        print('출발지 마커 이미지 적용 완료');
+      } catch (e) {
+        print('출발지 마커 이미지 로드 실패: $e');
+      }
+      
+      // 도착지 마커에 이미지 추가 (비동기 처리)
+      try {
+        final destinationMarkerIcon = await MarkerIcon.fromAsset('assets/images/도착지.png');
+        destination_marker.icon = destinationMarkerIcon;
+        print('도착지 마커 이미지 적용 완료');
+      } catch (e) {
+        print('도착지 마커 이미지 로드 실패: $e');
+      }
+      
+      // 편의점 마커에 이미지 추가 (비동기 처리)
+      for (int i = 0; i < convenienceStoreMarkers.length; i++) {
+        try {
+          final markerIcon = await MarkerIcon.fromAsset('assets/images/편의점.png');
+          convenienceStoreMarkers[i].icon = markerIcon;
+        } catch (e) {
+          print('편의점 마커 이미지 로드 실패: $e');
+        }
+      }      
       
       // 모든 마커를 한 번에 추가 (출발지, 도착지, 카메라 위치)
-      final allMarkers = [origin_marker, destination_marker, ...cameraMarkers];
+      final allMarkers = [origin_marker, destination_marker, ...cameraMarkers, ...convenienceStoreMarkers];
       await _mapController!.addMarker(markers: allMarkers);
       print('총 ${allMarkers.length}개의 마커 추가 완료 (출발지, 도착지, 카메라 위치)');
 
@@ -352,7 +407,7 @@ class _ServicePageState extends State<ServicePage> {
               LatLng(startLat, startLng),
               LatLng(endLat, endLng),
             ],
-            strokeColor: Colors.blue, // 파란색 계열
+            strokeColor: Colors.grey, // 회색 계열
             strokeOpacity: 0.7,
             strokeWidth: 5,
             strokeStyle: StrokeStyle.solid,
@@ -397,7 +452,7 @@ class _ServicePageState extends State<ServicePage> {
               LatLng(startLat, startLng),
               LatLng(endLat, endLng),
             ],
-            strokeColor: Colors.orange, // 주황색
+            strokeColor: Colors.green, // 초록색
             strokeOpacity: 0.8,
             strokeWidth: 4,
             strokeStyle: StrokeStyle.solid,
