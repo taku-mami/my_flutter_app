@@ -135,7 +135,7 @@ class _ServicePageState extends State<ServicePage> {
         return jsonEncode(s2RouteData);
       }
 
-    print("안전 경로 시나리오를 벗어났습니다.");
+    print("안심 경로 시나리오를 벗어났습니다.");
     return jsonEncode({});
   }
 
@@ -234,6 +234,136 @@ class _ServicePageState extends State<ServicePage> {
     if (distanceKm < 5.0) return 6;      // 5km 미만: 멀음
     if (distanceKm < 10.0) return 7;     // 10km 미만: 매우 멀음
     return 8;                            // 10km 이상: 가장 멀음
+  }
+  
+  /// 시나리오에 따른 경로 정보 CustomOverlay를 반환하는 함수
+  CustomOverlay getRouteInfoOverlay({
+    required LatLng origin,
+    required LatLng destination,
+    required LatLng routeMidpoint,
+  }) {
+    // locationData에서 '개금2동예슬어린이집'과 '개금대동아파트' 좌표 찾기
+    final s1OriginCoords = locationData
+        .firstWhere((location) => location['localName'] == '개금2동예슬어린이집')['coord'] as List;
+    final s1Origin = LatLng(s1OriginCoords[1] as double, s1OriginCoords[0] as double);
+    
+    final s1DestinationCoords = locationData
+        .firstWhere((location) => location['localName'] == '개금대동아파트')['coord'] as List;
+    final s1Destination = LatLng(s1DestinationCoords[1] as double, s1DestinationCoords[0] as double);
+
+    // locationData에서 '배치과의원'과 '초읍하늘채포레스원아파트' 좌표 찾기
+    final s2OriginCoords = locationData
+        .firstWhere((location) => location['localName'] == '배치과의원')['coord'] as List;
+    final s2Origin = LatLng(s2OriginCoords[1] as double, s2OriginCoords[0] as double);
+    
+    final s2DestinationCoords = locationData
+        .firstWhere((location) => location['localName'] == '초읍하늘채포레스원아파트')['coord'] as List;
+    final s2Destination = LatLng(s2DestinationCoords[1] as double, s2DestinationCoords[0] as double);
+
+    // 시나리오 1: 개금2동예슬어린이집 → 개금대동아파트
+    if (origin.latitude == s1Origin.latitude
+        && origin.longitude == s1Origin.longitude
+        && destination.latitude == s1Destination.latitude
+        && destination.longitude == s1Destination.longitude) {
+      return CustomOverlay(
+        customOverlayId: 'route_info_overlay_s1',
+        latLng: routeMidpoint,
+        content: '<div style="background-color: #999999; color: white; padding: 8px 12px; border-radius: 10px; font-family: Arial, sans-serif; font-size: 11px; font-weight: bold; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.3); position: relative; white-space: nowrap;">최단 경로<br>18분<div style="position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #999999;"></div></div>',
+        xAnchor: 0.5,
+        yAnchor: 1.2,
+        zIndex: 5,
+      );
+    }
+    // 시나리오 2: 배치과의원 → 초읍하늘채포레스원아파트
+    else if (origin.latitude == s2Origin.latitude
+        && origin.longitude == s2Origin.longitude
+        && destination.latitude == s2Destination.latitude
+        && destination.longitude == s2Destination.longitude) {
+      return CustomOverlay(
+        customOverlayId: 'route_info_overlay_s2',
+        latLng: routeMidpoint,
+        content: '<div style="background-color: #999999; color: white; padding: 8px 12px; border-radius: 10px; font-family: Arial, sans-serif; font-size: 11px; font-weight: bold; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.3); position: relative; white-space: nowrap;">최단 경로<br>8분<div style="position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #999999;"></div></div>',
+        xAnchor: 0.5,
+        yAnchor: 1.2,
+        zIndex: 5,
+      );
+    }
+    // 기본 시나리오
+    else {
+      return CustomOverlay(
+        customOverlayId: 'route_info_overlay_default',
+        latLng: routeMidpoint,
+        content: '<div style="background-color: #999999; color: white; padding: 8px 12px; border-radius: 10px; font-family: Arial, sans-serif; font-size: 11px; font-weight: bold; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.3); position: relative; white-space: nowrap;">최단 경로<br>시간 정보 없음<div style="position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #999999;"></div></div>',
+        xAnchor: 0.5,
+        yAnchor: 1.2,
+        zIndex: 5,
+      );
+    }
+  }
+  
+  /// 시나리오에 따른 안심 경로 정보 CustomOverlay를 반환하는 함수
+  CustomOverlay getSafeRouteInfoOverlay({
+    required LatLng origin,
+    required LatLng destination,
+    required LatLng routeMidpoint,
+  }) {
+    // locationData에서 '개금2동예슬어린이집'과 '개금대동아파트' 좌표 찾기
+    final s1OriginCoords = locationData
+        .firstWhere((location) => location['localName'] == '개금2동예슬어린이집')['coord'] as List;
+    final s1Origin = LatLng(s1OriginCoords[1] as double, s1OriginCoords[0] as double);
+    
+    final s1DestinationCoords = locationData
+        .firstWhere((location) => location['localName'] == '개금대동아파트')['coord'] as List;
+    final s1Destination = LatLng(s1DestinationCoords[1] as double, s1DestinationCoords[0] as double);
+
+    // locationData에서 '배치과의원'과 '초읍하늘채포레스원아파트' 좌표 찾기
+    final s2OriginCoords = locationData
+        .firstWhere((location) => location['localName'] == '배치과의원')['coord'] as List;
+    final s2Origin = LatLng(s2OriginCoords[1] as double, s2OriginCoords[0] as double);
+    
+    final s2DestinationCoords = locationData
+        .firstWhere((location) => location['localName'] == '초읍하늘채포레스원아파트')['coord'] as List;
+    final s2Destination = LatLng(s2DestinationCoords[1] as double, s2DestinationCoords[0] as double);
+
+    // 시나리오 1: 개금2동예슬어린이집 → 개금대동아파트
+    if (origin.latitude == s1Origin.latitude
+        && origin.longitude == s1Origin.longitude
+        && destination.latitude == s1Destination.latitude
+        && destination.longitude == s1Destination.longitude) {
+      return CustomOverlay(
+        customOverlayId: 'safe_route_info_overlay_s1',
+        latLng: routeMidpoint,
+        content: '<div style="background-color: #4CAF50; color: white; padding: 8px 12px; border-radius: 10px; font-family: Arial, sans-serif; font-size: 11px; font-weight: bold; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.3); position: relative; white-space: nowrap;">안심 경로<br>20분<div style="position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #4CAF50;"></div></div>',
+        xAnchor: 0.5,
+        yAnchor: 1.2,
+        zIndex: 5,
+      );
+    }
+    // 시나리오 2: 배치과의원 → 초읍하늘채포레스원아파트
+    else if (origin.latitude == s2Origin.latitude
+        && origin.longitude == s2Origin.longitude
+        && destination.latitude == s2Destination.latitude
+        && destination.longitude == s2Destination.longitude) {
+      return CustomOverlay(
+        customOverlayId: 'safe_route_info_overlay_s2',
+        latLng: routeMidpoint,
+        content: '<div style="background-color: #4CAF50; color: white; padding: 8px 12px; border-radius: 10px; font-family: Arial, sans-serif; font-size: 11px; font-weight: bold; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.3); position: relative; white-space: nowrap;">안심 경로<br>11분<div style="position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #4CAF50;"></div></div>',
+        xAnchor: 0.5,
+        yAnchor: 1.2,
+        zIndex: 5,
+      );
+    }
+    // 기본 시나리오
+    else {
+      return CustomOverlay(
+        customOverlayId: 'safe_route_info_overlay_default',
+        latLng: routeMidpoint,
+        content: '<div style="background-color: #4CAF50; color: white; padding: 8px 12px; border-radius: 10px; font-family: Arial, sans-serif; font-size: 11px; font-weight: bold; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.3); position: relative; white-space: nowrap;">안심 경로<br>시간 정보 없음<div style="position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #4CAF50;"></div></div>',
+        xAnchor: 0.5,
+        yAnchor: 1.2,
+        zIndex: 5,
+      );
+    }
   }
   
   /// 도착지 검색 필터링
@@ -342,6 +472,8 @@ class _ServicePageState extends State<ServicePage> {
         [129.019653885683, 35.1455505790497], // GS25 개금백병원점
         [129.019975472397, 35.1463544682347], // CU 개금백병원점
         [129.016149185872, 35.1477573596868], // GS25 주례파크점
+        [129.050979044304, 35.1800938779689], // GS25 초읍하늘채점
+        [129.052601108046, 35.1784713345996], // 세븐일레븐 초읍점
       ]
     };
     
@@ -380,12 +512,12 @@ class _ServicePageState extends State<ServicePage> {
       return;
     }
     
-    // 출발지와 도착지가 모두 선택된 경우에만 안전 경로 찾기 다이얼로그 표시
+    // 출발지와 도착지가 모두 선택된 경우에만 안심 경로 찾기 다이얼로그 표시
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('안전 경로 찾기'),
-        content: Text('출발지: $originText\n도착지: $destinationText\n\n안전 경로를 찾으시겠습니까?'),
+        title: const Text('안심 경로 찾기'),
+        content: Text('출발지: $originText\n도착지: $destinationText\n\n안심 경로를 찾으시겠습니까?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -394,7 +526,7 @@ class _ServicePageState extends State<ServicePage> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              // 안전 경로 찾기 처리
+              // 안심 경로 찾기 처리
               _handleDestinationSelection(context);
             },
             child: const Text('찾기'),
@@ -633,13 +765,10 @@ class _ServicePageState extends State<ServicePage> {
       final routeMidpoint = getRouteMidpoint(routeJson);
       
       // 경로의 중간 지점에 '경로설명' CustomOverlay 생성
-      final routeInfoOverlay = CustomOverlay(
-        customOverlayId: 'route_info_overlay',
-        latLng: routeMidpoint,
-        content: '<div style="background-color: #999999; color: white; padding: 8px 12px; border-radius: 10px; font-family: Arial, sans-serif; font-size: 11px; font-weight: bold; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.3); position: relative; white-space: nowrap;">최단 경로<br>20분<div style="position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #999999;"></div></div>',
-        xAnchor: 0.5,
-        yAnchor: 1.2, // 말풍선이 좌표점 아래에 위치하도록 조정
-        zIndex: 5,
+      final routeInfoOverlay = getRouteInfoOverlay(
+        origin: originLatLng,
+        destination: destinationLatLng,
+        routeMidpoint: routeMidpoint,
       );
       
       // 최단 경로의 모든 polyline을 생성하여 allPolylines에 추가
@@ -682,38 +811,35 @@ class _ServicePageState extends State<ServicePage> {
         }
       }
       
-      // getSafeWalkRoute 함수를 사용하여 안전 경로 정보 가져오기
+      // getSafeWalkRoute 함수를 사용하여 안심 경로 정보 가져오기
       final safeRouteJson = getSafeWalkRoute(
         origin: originLatLng,
         destination: destinationLatLng,
       );
       
-      // JSON 파싱하여 안전 경로의 roads 정보 추출
+      // JSON 파싱하여 안심 경로의 roads 정보 추출
       final safeRouteData = jsonDecode(safeRouteJson);
 
-      // 안전 경로의 중간 지점 좌표 추출
+      // 안심 경로의 중간 지점 좌표 추출
       final safeRouteMidpoint = getRouteMidpoint(safeRouteJson);
 
-      // 안전 경로의 중간 지점에 '안전 경로설명' CustomOverlay 생성 
-      final safeRouteInfoOverlay = CustomOverlay(
-        customOverlayId: 'safe_route_info_overlay',
-        latLng: safeRouteMidpoint,
-        content: '<div style="background-color: #4CAF50; color: white; padding: 8px 12px; border-radius: 10px; font-family: Arial, sans-serif; font-size: 11px; font-weight: bold; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.3); position: relative; white-space: nowrap;">안전 경로<br>20분<div style="position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #4CAF50;"></div></div>',
-        xAnchor: 0.5,
-        yAnchor: 1.2, // 말풍선이 좌표점 아래에 위치하도록 조정
-        zIndex: 5,
+      // 안심 경로의 중간 지점에 '안심 경로설명' CustomOverlay 생성 
+      final safeRouteInfoOverlay = getSafeRouteInfoOverlay(
+        origin: originLatLng,
+        destination: destinationLatLng,
+        routeMidpoint: safeRouteMidpoint,
       );
       
       // CustomOverlay를 한 번에 추가
       await _mapController!.addCustomOverlay(customOverlays: [routeInfoOverlay, safeRouteInfoOverlay]);
-      print('안전 경로설명 CustomOverlay 추가 완료: 중간 지점(${safeRouteMidpoint.latitude}, ${safeRouteMidpoint.longitude})');
+      print('안심 경로설명 CustomOverlay 추가 완료: 중간 지점(${safeRouteMidpoint.latitude}, ${safeRouteMidpoint.longitude})');
 
 
       final safeRoads = safeRouteData['routes'][0]['sections'][0]['roads'] as List;
       
-      print('추출된 안전 경로 roads 개수: ${safeRoads.length}');
+      print('추출된 안심 경로 roads 개수: ${safeRoads.length}');
       
-      // 안전 경로의 모든 polyline을 생성하여 allPolylines에 추가
+      // 안심 경로의 모든 polyline을 생성하여 allPolylines에 추가
       for (int i = 0; i < safeRoads.length; i++) {
         final road = safeRoads[i];
         final vertexes = road['vertexes'] as List;
@@ -725,9 +851,9 @@ class _ServicePageState extends State<ServicePage> {
           final endLng = vertexes[2] as double;
           final endLat = vertexes[3] as double;
           
-          // print('안전 경로 Road $i: 시작점($startLat, $startLng) → 도착점($endLat, $endLng)');
+          // print('안심 경로 Road $i: 시작점($startLat, $startLng) → 도착점($endLat, $endLng)');
           
-          // 안전 경로용 Polyline 생성 (파란색 계열)
+          // 안심 경로용 Polyline 생성 (파란색 계열)
           final safePolyline = Polyline(
             polylineId: 'safe_route_segment_$i',
             points: [
@@ -742,14 +868,14 @@ class _ServicePageState extends State<ServicePage> {
           );
           
           allPolylines.add(safePolyline);
-          // print('안전 경로 Road $i polyline 생성 완료');
+          // print('안심 경로 Road $i polyline 생성 완료');
         }
       }
       
-      // 모든 polyline을 한 번에 지도에 추가 (기존 경로 + 안전 경로)
+      // 모든 polyline을 한 번에 지도에 추가 (기존 경로 + 안심 경로)
       if (allPolylines.isNotEmpty) {
         await _mapController!.addPolyline(polylines: allPolylines);
-        print('총 ${allPolylines.length}개의 polyline을 한 번에 추가 완료 (기존 경로 + 안전 경로)');
+        print('총 ${allPolylines.length}개의 polyline을 한 번에 추가 완료 (기존 경로 + 안심 경로)');
       }
       
       // 카메라 좌표를 기준으로 Circle 생성 (카메라가 비추는 영역 표시)
@@ -764,8 +890,8 @@ class _ServicePageState extends State<ServicePage> {
           center: LatLng(lat, lng),
           radius: 20.0, // 반지름 20미터 (카메라가 비추는 영역)
           strokeWidth: 0, // 테두리 없음
-          fillColor: Colors.orange, // 주황색 채우기
-          fillOpacity: 0.5, // 50% 투명도
+          fillColor: Colors.pink, // 핑크색 채우기
+          fillOpacity: 0.3, // 30% 투명도
           zIndex: 3, // 마커와 polyline보다 위에 표시
         );
         
@@ -780,7 +906,7 @@ class _ServicePageState extends State<ServicePage> {
         radius: 50.0,
         strokeWidth: 0,
         fillColor: Colors.red,
-        fillOpacity: 0.3,
+        fillOpacity: 0.4,
         zIndex: 3,
       );
       
@@ -1068,7 +1194,7 @@ class _ServicePageState extends State<ServicePage> {
                                 ),
                               ),
                             
-                            // 안전 경로 찾기 버튼 (지도가 준비되고 UI가 보일 때만 표시)
+                            // 안심 경로 찾기 버튼 (지도가 준비되고 UI가 보일 때만 표시)
                             if (_isMapReady && _isUIVisible)
                               Positioned(
                                 left: 0,
@@ -1106,7 +1232,7 @@ class _ServicePageState extends State<ServicePage> {
                                               ),
                                               SizedBox(width: 8),
                                               Text(
-                                                '안전 경로 찾기',
+                                                '안심 경로 찾기',
                                                 style: TextStyle(
                                                   color: Colors.black87,
                                                   fontWeight: FontWeight.w600,
