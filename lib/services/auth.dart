@@ -59,7 +59,7 @@ class AuthService {
         
         // 서버 검증 (개발 모드에서는 스킵)
         bool serverResponse = false;
-        if (AppConfig().isDevelopmentMode) {
+        if (Config.isDevelopmentMode) {
           print("🔧 개발모드: 서버 검증 스킵");
           serverResponse = true;
         } else if (idToken != null) {
@@ -71,10 +71,10 @@ class AuthService {
           return AuthResult(
             success: true,
             user: user,
-            message: AppConfig().isDevelopmentMode
+            message: Config.isDevelopmentMode
                 ? '개발모드: 서버 검증 스킵됨! UID: ${user.uid}'
                 : '서버 인증 성공! UID: ${user.uid}',
-            isDevelopmentMode: AppConfig().isDevelopmentMode,
+            isDevelopmentMode: Config.isDevelopmentMode,
           );
         } else {
           return AuthResult(

@@ -21,7 +21,7 @@ void main() async {
   await Firebase.initializeApp();
   
   // 앱 설정 초기화
-  final appConfig = AppConfig();
+  // final appConfig = AppConfig(); // 주석 처리
   
   // Flutter 앱을 실행
   runApp(const MyApp());
@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: AppConfig().appName,
+      title: Config.appName,
       theme: ThemeData.dark().copyWith(
         // 다크 테마 기본 설정
         brightness: Brightness.dark,
